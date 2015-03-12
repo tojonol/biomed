@@ -5,7 +5,9 @@ project(biomed)
 find_package(ITK REQUIRED)
 include(${ITK_USE_FILE})
 
-add_executable(SRGMain srg.cxx)
+add_library(SeededRegionGrower src/Segmentation/SeededRegionGrower.cxx)
 
-target_link_libraries(SRGMain ${ITK_LIBRARIES})
+add_executable(SRGMain src/Segmentation/SRGDriver.cxx)
+
+target_link_libraries(SRGMain SeededRegionGrower ${ITK_LIBRARIES})
 
