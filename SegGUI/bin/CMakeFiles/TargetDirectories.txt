@@ -1,0 +1,3 @@
+C:/Users/jon/Documents/GitHub/biomed/SegGUI/bin/CMakeFiles/ALL_BUILD.dir
+C:/Users/jon/Documents/GitHub/biomed/SegGUI/bin/CMakeFiles/PickPixel.dir
+C:/Users/jon/Documents/GitHub/biomed/SegGUI/bin/CMakeFiles/ZERO_CHECK.dir
