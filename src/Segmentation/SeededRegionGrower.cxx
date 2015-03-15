@@ -52,11 +52,28 @@ bool IndexComp::operator()(
  return false;
 }
 
+DICOMImageP Region::Render(DICOMImageP original_image) {
+  DICOMImageP new_image = DICOMImage::New();
+  new_image->SetRegions(original_image->GetLargestPossibleRegion());
+  new_image->Allocate();
+  new_image->FillBuffer(-1000);
+
+  IndexSet::iterator it;
+  for (it=this->members.begin(); it!=this->members.end(); it++) {
+    new_image->SetPixel(*it, original_image->GetPixel(*it));
+  }
+
+  return new_image;
+}
+
 Region::Region(std::string name, IndexList seeds, DICOMImageP image) {
+  printf("Stats for region %s:\n", name.c_str());
   this->name = name;
 
   for (IndexList::iterator it=seeds.begin(); it!=seeds.end(); it++) {
     DICOMImage::IndexType idx = *it;
+    printf("  - seed point %ld, %ld, %ld with val %d",
+        idx[0], idx[1], idx[2], image->GetPixel(idx));
     this->AddPixel(idx, image);
   }
 };
@@ -119,6 +136,27 @@ IndexList SeededRegionGrower::GetNeighbors(
   return neighbors;
 }
 
+void SeededRegionGrower::WriteImage(DICOMImageP image, std::string path) {
+  int slices = image->GetLargestPossibleRegion().GetSize()[2];
+  OutputNamesGeneratorType::Pointer outputNames =
+    OutputNamesGeneratorType::New();
+  std::string seriesFormat = path + "/" + "IM%d.dcm";
+  outputNames->SetSeriesFormat(seriesFormat.c_str());
+  outputNames->SetIncrementIndex(1);
+  outputNames->SetStartIndex(1);
+  outputNames->SetEndIndex(slices);
+ 
+  SeriesWriterType::Pointer seriesWriter = SeriesWriterType::New();
+
+  seriesWriter->SetInput(image);
+  seriesWriter->SetImageIO(ImageIOType::New());
+  seriesWriter->SetFileNames(outputNames->GetFileNames());
+  // Pretty sure I'm shedding metadata here but uhh, ima make someone else 
+  // deal with that. Sorry bro or broette upon whom dealing with this falls.
+  //seriesWriter->SetMetaDataDictionaryArray(&outputArray);
+  seriesWriter->Update();
+};
+
 Region *SeededRegionGrower::GetBestBorderingRegion(
     std::set<Region*> &regions, DICOMImage::IndexType idx, DICOMImageP image) {
   IndexList neighbors = SeededRegionGrower::GetNeighbors(image, idx);
@@ -144,7 +182,7 @@ Region *SeededRegionGrower::GetBestBorderingRegion(
 }
 
 
-DICOMImage::Pointer SeededRegionGrower::LoadImage(std::string path) {
+DICOMImageP SeededRegionGrower::LoadImage(std::string path) {
   ImageIOType::Pointer gdcmIO = ImageIOType::New();
 
   InputNamesGeneratorType::Pointer inputNames = InputNamesGeneratorType::New();
@@ -162,7 +200,7 @@ DICOMImage::Pointer SeededRegionGrower::LoadImage(std::string path) {
   return reader->GetOutput();
 }
 
-DICOMImage::Pointer SeededRegionGrower::Segment(
+SegmentationResults SeededRegionGrower::Segment(
     DICOMImageP image, RegionSeeds seeds) {
   std::set<Region*> regions;
   IndexSet touched;
@@ -193,16 +231,22 @@ DICOMImage::Pointer SeededRegionGrower::Segment(
       IndexList neighbors = seed->GetNeighbors(image);
       for (IndexList::iterator it3=neighbors.begin();
           it3!=neighbors.end(); it3++) {
+        touched.insert(*it3);
         RatedVox *neighbor = new RatedVox(*it3, image, region);
         SSL.push_back(neighbor);
-        std::push_heap(SSL.begin(), SSL.end(), VoxComp());
+        std::push_heap(SSL.begin(), SSL.end(), VoxComp);
       }
     }
   }
 
+  int i = 0;
   while (!SSL.empty()) {
+    if (!(i++ % 10000)) {
+      printf("%d voxels have been touched\n", touched.size());
+    }
+
     // Vectors are straight retarded, std is a pile of junk
-    std::pop_heap(SSL.begin(), SSL.end(), VoxComp());
+    std::pop_heap(SSL.begin(), SSL.end(), VoxComp);
     RatedVox *vox = SSL.back(),
       *candidate;
     SSL.pop_back();
@@ -222,9 +266,17 @@ DICOMImage::Pointer SeededRegionGrower::Segment(
 
       candidate = new RatedVox(*it, image, best_region);
       SSL.push_back(candidate);
-      std::push_heap(SSL.begin(), SSL.end(), VoxComp());
+      std::push_heap(SSL.begin(), SSL.end(), VoxComp);
+      touched.insert(*it);
     }
   }
 
-  return NULL;
+  SegmentationResults results;
+  std::set<Region*>::iterator it;
+  for (it=regions.begin(); it!=regions.end(); it++) {
+    Region *region = *it;
+    results.insert(std::pair<std::string, Region*>(region->name, region));
+  }
+
+  return results;
 }

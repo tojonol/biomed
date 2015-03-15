@@ -12,9 +12,12 @@
 
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
+#include "itkImageSeriesWriter.h"
+
  
 typedef short PixelType;
 typedef itk::Image<PixelType, 3> DICOMImage;
+typedef itk::Image<PixelType, 2> DICOMSlice;
 typedef std::list<DICOMImage::IndexType> IndexList;
 typedef DICOMImage::Pointer DICOMImageP;
 typedef itk::ImageSeriesReader<DICOMImage> ReaderType;
@@ -22,6 +25,7 @@ typedef itk::GDCMImageIO ImageIOType;
 typedef itk::GDCMSeriesFileNames InputNamesGeneratorType;
 typedef itk::NumericSeriesFileNames OutputNamesGeneratorType;
 typedef std::map<std::string, IndexList*> RegionSeeds;
+typedef itk::ImageSeriesWriter<DICOMImage, DICOMSlice> SeriesWriterType;
 
 struct IndexComp {
  bool operator()(
@@ -35,15 +39,17 @@ class Region {
   public:
     std::string name;
     PixelType mean;
+    IndexSet members;
   private:
     int count, sum;
-    IndexSet members;
 
   public:
     Region(
         std::string name,
         IndexList seeds,
         DICOMImageP image);
+    DICOMImageP Render(
+        DICOMImageP original_image);
     void AddPixel(
         DICOMImage::IndexType idx,
         DICOMImageP image);
@@ -51,11 +57,13 @@ class Region {
         DICOMImage::IndexType idx);
 };
 
+typedef std::map<std::string, Region*> SegmentationResults;
+
 class SeededRegionGrower {
   public:
     static DICOMImageP LoadImage(
         std::string path);
-    static DICOMImageP Segment(
+    static SegmentationResults Segment(
         DICOMImageP image,
         RegionSeeds seeds);
     static DICOMImage::IndexType ConvertOffset(
@@ -67,6 +75,9 @@ class SeededRegionGrower {
     static void FilterTouched(
         IndexSet &touched,
         IndexList *idx_list);
+    static void WriteImage(
+        DICOMImageP image,
+        std::string path);
   private:
     static Region *GetBestBorderingRegion(
         std::set<Region*> &regions,
