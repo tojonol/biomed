@@ -59,6 +59,31 @@ class Region {
 
 typedef std::map<std::string, Region*> SegmentationResults;
 
+//Brain contains 1849647 voxels and the skull contains 1745
+class RatedVox {
+  public:
+    int delta;
+    DICOMImage::IndexType idx;
+
+    RatedVox(
+        DICOMImage::IndexType index);
+    RatedVox(
+        DICOMImage::IndexType index,
+        DICOMImageP image,
+        Region *region);
+    IndexList GetNeighbors(
+        DICOMImageP image);
+
+    static short ComputeDelta(
+        DICOMImage::IndexType idx,
+        DICOMImageP image,
+        Region *region);
+};
+
+struct VoxComp {
+  bool operator()(const RatedVox *v1, const RatedVox *v2) const;
+};
+
 class SeededRegionGrower {
   public:
     static DICOMImageP LoadImage(

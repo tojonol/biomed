@@ -6,37 +6,30 @@
 #include <set>
 #include <map>
 
-class RatedVox {
-  public:
-    int delta;
-    DICOMImage::IndexType idx;
+RatedVox::RatedVox(DICOMImage::IndexType index) {
+  this->idx = index;
+}
 
-    RatedVox(DICOMImage::IndexType index) {
-      this->idx = index;
-    }
+RatedVox::RatedVox(
+    DICOMImage::IndexType index, DICOMImageP image, Region *region) {
+  this->idx = index;
+  this->delta = RatedVox::ComputeDelta(index, image, region);
+}
 
-    RatedVox(DICOMImage::IndexType index, DICOMImageP image, Region *region) {
-      this->idx = index;
-      this->delta = RatedVox::ComputeDelta(index, image, region);
-    }
+IndexList RatedVox::GetNeighbors(DICOMImageP image) {
+  return SeededRegionGrower::GetNeighbors(image, this->idx);
+}
 
-    IndexList GetNeighbors(DICOMImageP image) {
-      return SeededRegionGrower::GetNeighbors(image, this->idx);
-    }
+short RatedVox::ComputeDelta(
+    DICOMImage::IndexType idx, DICOMImageP image, Region *region) { 
+  PixelType intensity = image->GetPixel(idx);
 
-    static short ComputeDelta(
-        DICOMImage::IndexType idx, DICOMImageP image, Region *region) { 
-      PixelType intensity = image->GetPixel(idx);
+  return std::abs(intensity - region->mean);
+}
 
-      return std::abs(intensity - region->mean);
-    }
-};
-
-struct VoxComp {
- bool operator()(const RatedVox *v1, const RatedVox *v2) const {
-   return v1->delta < v2->delta;
- }
-};
+bool VoxComp::operator()(const RatedVox *v1, const RatedVox *v2) const {
+  return v1->delta > v2->delta;
+}
 
 bool IndexComp::operator()(
    const DICOMImage::IndexType& i1, const DICOMImage::IndexType& i2) const {
@@ -72,7 +65,7 @@ Region::Region(std::string name, IndexList seeds, DICOMImageP image) {
 
   for (IndexList::iterator it=seeds.begin(); it!=seeds.end(); it++) {
     DICOMImage::IndexType idx = *it;
-    printf("  - seed point %ld, %ld, %ld with val %d",
+    printf("  - seed point %ld, %ld, %ld with val %d\n",
         idx[0], idx[1], idx[2], image->GetPixel(idx));
     this->AddPixel(idx, image);
   }
@@ -234,7 +227,7 @@ SegmentationResults SeededRegionGrower::Segment(
         touched.insert(*it3);
         RatedVox *neighbor = new RatedVox(*it3, image, region);
         SSL.push_back(neighbor);
-        std::push_heap(SSL.begin(), SSL.end(), VoxComp);
+        std::push_heap(SSL.begin(), SSL.end(), VoxComp());
       }
     }
   }
@@ -246,7 +239,7 @@ SegmentationResults SeededRegionGrower::Segment(
     }
 
     // Vectors are straight retarded, std is a pile of junk
-    std::pop_heap(SSL.begin(), SSL.end(), VoxComp);
+    std::pop_heap(SSL.begin(), SSL.end(), VoxComp());
     RatedVox *vox = SSL.back(),
       *candidate;
     SSL.pop_back();
@@ -266,7 +259,7 @@ SegmentationResults SeededRegionGrower::Segment(
 
       candidate = new RatedVox(*it, image, best_region);
       SSL.push_back(candidate);
-      std::push_heap(SSL.begin(), SSL.end(), VoxComp);
+      std::push_heap(SSL.begin(), SSL.end(), VoxComp());
       touched.insert(*it);
     }
   }
