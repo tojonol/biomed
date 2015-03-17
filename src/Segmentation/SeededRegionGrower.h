@@ -38,7 +38,7 @@ typedef std::set<DICOMImage::IndexType, IndexComp> IndexSet;
 class Region {
   public:
     std::string name;
-    PixelType mean;
+    int mean;
     IndexSet members;
   private:
     int count, sum;
@@ -53,6 +53,10 @@ class Region {
     void AddPixel(
         DICOMImage::IndexType idx,
         DICOMImageP image);
+    void AddPixel(
+        DICOMImage::IndexType idx,
+        DICOMImageP image,
+        bool update);
     bool IsMember(
         DICOMImage::IndexType idx);
 };
@@ -74,7 +78,7 @@ class RatedVox {
     IndexList GetNeighbors(
         DICOMImageP image);
 
-    static short ComputeDelta(
+    static int ComputeDelta(
         DICOMImage::IndexType idx,
         DICOMImageP image,
         Region *region);

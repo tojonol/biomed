@@ -5,7 +5,8 @@
 #include "SeededRegionGrower.h"
 
 int main(int argc, char* argv[]) {
-  std::string series_dir = "/Users/lanny/Downloads/Head-Neck Cetuximab-Demo/0522c0001/1.3.6.1.4.1.14519.5.2.1.5099.8010.199920086920823171706454903251/scaled/";
+  //std::string series_dir = "/Users/lanny/Downloads/Head-Neck Cetuximab-Demo/0522c0001/1.3.6.1.4.1.14519.5.2.1.5099.8010.199920086920823171706454903251/scaled/";
+  std::string series_dir = "/Users/lanny/Downloads/Head-Neck Cetuximab-Demo/0522c0013/1.3.6.1.4.1.14519.5.2.1.5099.8010.304837808445176109867630712750/scaled/";
 
   DICOMImage::Pointer image;
   try {
@@ -64,9 +65,16 @@ int main(int argc, char* argv[]) {
   IndexList::iterator brain_head = brain_seeds.begin(),
     skull_head = skull_seeds.begin(),
     space_head = space_seeds.begin();
+  /*
   DICOMImage::OffsetType p1 = {254, 270, 244},
     p2 = {230, 291, 271},
     p3 = {258, 302, 220}; 
+  */
+
+  DICOMImage::OffsetType p1 = {253, 272, 209},
+    p2 = {249, 309, 252},
+    p3 = {260, 279, 178}; 
+
   brain_seeds.insert(brain_head,
       SeededRegionGrower::ConvertOffset(p1, spacing));
   brain_seeds.insert(brain_head,
@@ -75,9 +83,15 @@ int main(int argc, char* argv[]) {
       SeededRegionGrower::ConvertOffset(p3, spacing));
 
 
+  /*
   DICOMImage::OffsetType p4 = {207, 209, 271},
     p5 = {187, 270, 233},
     p6 = {304, 297, 196}; 
+  */
+
+  DICOMImage::OffsetType p4 = {281, 333, 264},
+    p5 = {184, 259, 264},
+    p6 = {317, 271, 204}; 
   skull_seeds.insert(skull_head,
       SeededRegionGrower::ConvertOffset(p4, spacing));
   skull_seeds.insert(skull_head,
@@ -85,8 +99,13 @@ int main(int argc, char* argv[]) {
   skull_seeds.insert(skull_head,
       SeededRegionGrower::ConvertOffset(p6, spacing));
 
+  /*
   DICOMImage::OffsetType p7 = {96, 60, 97},
     p8 = {93, 83, 51};
+  */
+
+  DICOMImage::OffsetType p7 = {437, 135, 204},
+    p8 = {315, 117, 132};
   space_seeds.insert(space_head,
       SeededRegionGrower::ConvertOffset(p4, spacing));
   space_seeds.insert(space_head,
@@ -95,7 +114,7 @@ int main(int argc, char* argv[]) {
   RegionSeeds seeds;
   seeds.insert(std::pair<std::string, IndexList*>("brain", &brain_seeds));
   seeds.insert(std::pair<std::string, IndexList*>("skull", &skull_seeds));
-  seeds.insert(std::pair<std::string, IndexList*>("space", &space_seeds));
+  //seeds.insert(std::pair<std::string, IndexList*>("space", &space_seeds));
 
   SegmentationResults results; 
   results = SeededRegionGrower::Segment(image, seeds);
@@ -103,9 +122,10 @@ int main(int argc, char* argv[]) {
   DICOMImageP brain = results.find("brain")->second->Render(image),
     skull = results.find("skull")->second->Render(image);
 
-  printf("Brain contains %d voxels and the skull contains %d\n",
+  printf("Brain vox count: %d\nSkull vox count: %d\nSpace vox count: \n",
     results.find("brain")->second->members.size(),
     results.find("skull")->second->members.size());
+    //results.find("space")->second->members.size());
 
   SeededRegionGrower::WriteImage(brain, "/Users/lanny/test_dir/brain");
   SeededRegionGrower::WriteImage(skull, "/Users/lanny/test_dir/skull");

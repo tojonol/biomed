@@ -6,6 +6,21 @@
 #include <set>
 #include <map>
 
+void SSLStatus(std::vector<RatedVox*> &SSL, std::set<Region*> &regions,
+    DICOMImageP image) {
+  // Kill me
+  std::vector<RatedVox*>::iterator it;
+  RatedVox *vox;
+  printf("Status of the SSL:\n");
+  for (it=SSL.begin(); it!=SSL.end(); it++) {
+    vox = *it;
+    printf("d: %d, {%d, %d, %d}, val: %d\n",
+        vox->delta, vox->idx[0], vox->idx[1], vox->idx[2],
+        image->GetPixel(vox->idx));
+  }
+  printf("\n\n");
+}
+
 RatedVox::RatedVox(DICOMImage::IndexType index) {
   this->idx = index;
 }
@@ -20,9 +35,10 @@ IndexList RatedVox::GetNeighbors(DICOMImageP image) {
   return SeededRegionGrower::GetNeighbors(image, this->idx);
 }
 
-short RatedVox::ComputeDelta(
+int RatedVox::ComputeDelta(
     DICOMImage::IndexType idx, DICOMImageP image, Region *region) { 
-  PixelType intensity = image->GetPixel(idx);
+  int intensity = image->GetPixel(idx),
+    delta = std::abs(intensity - region->mean);
 
   return std::abs(intensity - region->mean);
 }
@@ -62,23 +78,32 @@ DICOMImageP Region::Render(DICOMImageP original_image) {
 Region::Region(std::string name, IndexList seeds, DICOMImageP image) {
   printf("Stats for region %s:\n", name.c_str());
   this->name = name;
+  this->sum = this->mean = this->count = 0;
 
   for (IndexList::iterator it=seeds.begin(); it!=seeds.end(); it++) {
     DICOMImage::IndexType idx = *it;
     printf("  - seed point %ld, %ld, %ld with val %d\n",
         idx[0], idx[1], idx[2], image->GetPixel(idx));
-    this->AddPixel(idx, image);
+    this->AddPixel(idx, image, true);
   }
+
+  printf("- Mean: %d\n", this->mean);
 };
 
 void Region::AddPixel(DICOMImage::IndexType idx, DICOMImageP image) {
-  this->members.insert(idx);
-
-  this->sum += image->GetPixel(idx);
-  this->count++;
-  this->mean = this->sum / this->count;
+  this->AddPixel(idx, image, false);
 }
 
+void Region::AddPixel(
+    DICOMImage::IndexType idx, DICOMImageP image, bool update) {
+  this->members.insert(idx);
+
+  if (update) {
+    this->sum += image->GetPixel(idx);
+    this->count++;
+    this->mean = this->sum / this->count;
+  }
+}
 
 bool Region::IsMember(DICOMImage::IndexType idx) {
   return !!this->members.count(idx);
@@ -217,11 +242,11 @@ SegmentationResults SeededRegionGrower::Segment(
       DICOMImage::IndexType idx = *it2;
       touched.insert(idx);
 
-      RatedVox *seed = new RatedVox(idx, image, region);
-      region->AddPixel(idx, image);
+      //RatedVox *seed = new RatedVox(idx, image, region);
+      //region->AddPixel(idx, image, true);
 
       // And add each seed point's neighbors to the SSL
-      IndexList neighbors = seed->GetNeighbors(image);
+      IndexList neighbors = SeededRegionGrower::GetNeighbors(image, idx);
       for (IndexList::iterator it3=neighbors.begin();
           it3!=neighbors.end(); it3++) {
         touched.insert(*it3);
@@ -232,8 +257,12 @@ SegmentationResults SeededRegionGrower::Segment(
     }
   }
 
+  std::string bla;
   int i = 0;
   while (!SSL.empty()) {
+
+    //SSLStatus(SSL, regions, image);
+
     if (!(i++ % 10000)) {
       printf("%d voxels have been touched\n", touched.size());
     }
@@ -244,13 +273,19 @@ SegmentationResults SeededRegionGrower::Segment(
       *candidate;
     SSL.pop_back();
 
+    /*
+    printf("Popped vox: %d {%d, %d, %d}, val: %d\n",
+        vox->delta, vox->idx[0], vox->idx[1], vox->idx[2],
+        image->GetPixel(vox->idx));
+    std::getline(std::cin, bla);
+    */
+
     Region *best_region = SeededRegionGrower::GetBestBorderingRegion(
         regions, vox->idx, image);
 
     best_region->AddPixel(vox->idx, image);
 
-    IndexList neighbors = vox->GetNeighbors(image),
-      neighbors2;
+    IndexList neighbors = vox->GetNeighbors(image);
     SeededRegionGrower::FilterTouched(touched, &neighbors);
 
     for (IndexList::iterator it=neighbors.begin(); it!=neighbors.end(); it++) {
