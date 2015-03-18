@@ -91,13 +91,16 @@ int main(int argc, char* argv[]) {
 
   DICOMImage::OffsetType p4 = {281, 333, 264},
     p5 = {184, 259, 264},
-    p6 = {317, 271, 204}; 
+    p6 = {317, 271, 204},
+    p10 = {189, 220, 232};
   skull_seeds.insert(skull_head,
       SeededRegionGrower::ConvertOffset(p4, spacing));
   skull_seeds.insert(skull_head,
       SeededRegionGrower::ConvertOffset(p5, spacing));
   skull_seeds.insert(skull_head,
       SeededRegionGrower::ConvertOffset(p6, spacing));
+  skull_seeds.insert(skull_head,
+      SeededRegionGrower::ConvertOffset(p10, spacing));
 
   /*
   DICOMImage::OffsetType p7 = {96, 60, 97},
@@ -105,30 +108,36 @@ int main(int argc, char* argv[]) {
   */
 
   DICOMImage::OffsetType p7 = {437, 135, 204},
-    p8 = {315, 117, 132};
+    p8 = {315, 117, 132},
+    p9 = {449, 74, 146};
   space_seeds.insert(space_head,
-      SeededRegionGrower::ConvertOffset(p4, spacing));
+      SeededRegionGrower::ConvertOffset(p7, spacing));
   space_seeds.insert(space_head,
-      SeededRegionGrower::ConvertOffset(p5, spacing));
+      SeededRegionGrower::ConvertOffset(p8, spacing));
+  space_seeds.insert(space_head,
+      SeededRegionGrower::ConvertOffset(p9, spacing));
 
   RegionSeeds seeds;
   seeds.insert(std::pair<std::string, IndexList*>("brain", &brain_seeds));
   seeds.insert(std::pair<std::string, IndexList*>("skull", &skull_seeds));
-  //seeds.insert(std::pair<std::string, IndexList*>("space", &space_seeds));
+  seeds.insert(std::pair<std::string, IndexList*>("space", &space_seeds));
 
+  printf("Starting segmentation\n");
   SegmentationResults results; 
   results = SeededRegionGrower::Segment(image, seeds);
 
   DICOMImageP brain = results.find("brain")->second->Render(image),
-    skull = results.find("skull")->second->Render(image);
+    skull = results.find("skull")->second->Render(image),
+    space = results.find("space")->second->Render(image);
 
-  printf("Brain vox count: %d\nSkull vox count: %d\nSpace vox count: \n",
+  printf("Brain vox count: %d\nSkull vox count: %d\nSpace vox count: %d\n",
     results.find("brain")->second->members.size(),
-    results.find("skull")->second->members.size());
-    //results.find("space")->second->members.size());
+    results.find("skull")->second->members.size(),
+    results.find("space")->second->members.size());
 
   SeededRegionGrower::WriteImage(brain, "/Users/lanny/test_dir/brain");
   SeededRegionGrower::WriteImage(skull, "/Users/lanny/test_dir/skull");
+  SeededRegionGrower::WriteImage(space, "/Users/lanny/test_dir/space");
   //SeededRegionGrower::WriteImage(image, "/Users/lanny/test_dir");
 
   return 0;

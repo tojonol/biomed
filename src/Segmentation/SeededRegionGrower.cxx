@@ -91,7 +91,7 @@ Region::Region(std::string name, IndexList seeds, DICOMImageP image) {
 };
 
 void Region::AddPixel(DICOMImage::IndexType idx, DICOMImageP image) {
-  this->AddPixel(idx, image, false);
+  this->AddPixel(idx, image, true);
 }
 
 void Region::AddPixel(
