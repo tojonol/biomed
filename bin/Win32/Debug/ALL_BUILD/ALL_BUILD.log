@@ -1,0 +1,15 @@
+﻿Build started 3/18/2015 4:39:19 PM.
+     1>Project "C:\Users\jon\Documents\GitHub\bio\biomed\bin\ALL_BUILD.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "Win32\Debug\ALL_BUILD\ALL_BUILD.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       CustomBuild:
+         Building Custom Rule C:/Users/jon/Documents/GitHub/bio/biomed/CMakeLists.txt
+         CMake does not need to re-run because C:\Users\jon\Documents\GitHub\bio\biomed\bin\CMakeFiles\generate.stamp is up-to-date.
+       FinalizeBuildStatus:
+         Deleting file "Win32\Debug\ALL_BUILD\ALL_BUILD.unsuccessfulbuild".
+         Touching "Win32\Debug\ALL_BUILD\ALL_BUILD.lastbuildstate".
+     1>Done Building Project "C:\Users\jon\Documents\GitHub\bio\biomed\bin\ALL_BUILD.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.28
