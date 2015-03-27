@@ -10,6 +10,7 @@
 #include <vtkRenderWindowInteractor.h>
 #include <vtkRenderer.h>
 #include <vtkActor.h>
+#include <vtkCornerAnnotation.h>
 // headers needed for this example
 #include <vtkImageViewer2.h>
 #include <vtkDICOMImageReader.h>
@@ -33,18 +34,18 @@ public:
  
  
 // Define own interaction style
-class myVtkInteractorStyleImage : public vtkInteractorStyleImage
-{
-public:
-   static myVtkInteractorStyleImage* New();
-   vtkTypeMacro(myVtkInteractorStyleImage, vtkInteractorStyleImage);
+class myVtkInteractorStyleImage : public vtkInteractorStyleImage {
+  public:
+    static myVtkInteractorStyleImage* New();
+    vtkTypeMacro(myVtkInteractorStyleImage, vtkInteractorStyleImage);
+    vtkSmartPointer<vtkImageViewer2> imageViewer;
  
-protected:
-   vtkImageViewer2* _ImageViewer;
-   vtkTextMapper* _StatusMapper;
-   int _Slice;
-   int _MinSlice;
-   int _MaxSlice;
+  protected:
+    vtkImageViewer2* _ImageViewer;
+    vtkTextMapper* _StatusMapper;
+    int _Slice;
+    int _MinSlice;
+    int _MaxSlice;
  
 public:
    void SetImageViewer(vtkImageViewer2* imageViewer) {
@@ -117,6 +118,17 @@ protected:
       // in case another interactorstyle is used (e.g. trackballstyle, ...)
       // vtkInteractorStyleImage::OnMouseWheelBackward();
    }
+
+  virtual void OnLeftButtonDown() {
+    vtkRenderWindowInteractor *interactor =
+      this->imageViewer->GetRenderWindow()->GetInteractor();
+
+
+    int x = interactor->GetEventPosition()[0],
+      y = interactor->GetEventPosition()[1];
+
+    printf("Click at: (%d, %d, %d)\n", x, y, this->_Slice);
+   }
 };
  
 vtkStandardNewMacro(myVtkInteractorStyleImage);
@@ -145,7 +157,7 @@ int main(int argc, char* argv[])
    vtkSmartPointer<vtkImageViewer2> imageViewer =
       vtkSmartPointer<vtkImageViewer2>::New();
    imageViewer->SetInputConnection(reader->GetOutputPort());
- 
+
    // slice status message
    vtkSmartPointer<vtkTextProperty> sliceTextProp = vtkSmartPointer<vtkTextProperty>::New();
    sliceTextProp->SetFontFamilyToCourier();
@@ -185,6 +197,7 @@ int main(int argc, char* argv[])
  
    vtkSmartPointer<myVtkInteractorStyleImage> myInteractorStyle =
       vtkSmartPointer<myVtkInteractorStyleImage>::New();
+   myInteractorStyle->imageViewer = imageViewer;
  
    // make imageviewer2 and sliceTextMapper visible to our interactorstyle
    // to enable slice status message updates when scrolling through the slices
