@@ -111,11 +111,14 @@ bool Region::IsMember(DICOMImage::IndexType idx) {
 
 void SeededRegionGrower::FilterTouched(
     IndexSet &touched, IndexList *idx_list) {
-  for (IndexList::iterator it=idx_list->begin(); it!=idx_list->end(); it++) {
+  IndexList::iterator it=idx_list->begin();
+  while (it != idx_list->end()) {
     if (touched.count(*it)) {
       it = idx_list->erase(it);
-      it--;
+      continue;
     }
+
+    it++;
   }
 }
 
