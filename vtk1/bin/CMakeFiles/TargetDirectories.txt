@@ -1,0 +1,3 @@
+C:/Users/jon/Documents/Visual Studio 2010/Projects/vtk1/bin/CMakeFiles/ALL_BUILD.dir
+C:/Users/jon/Documents/Visual Studio 2010/Projects/vtk1/bin/CMakeFiles/Sphere.dir
+C:/Users/jon/Documents/Visual Studio 2010/Projects/vtk1/bin/CMakeFiles/ZERO_CHECK.dir

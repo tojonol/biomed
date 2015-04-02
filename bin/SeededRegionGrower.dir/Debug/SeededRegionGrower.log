@@ -1,0 +1,137 @@
+﻿Build started 3/18/2015 4:38:47 PM.
+     1>Project "C:\Users\jon\Documents\GitHub\bio\biomed\bin\SeededRegionGrower.vcxproj" on node 2 (build target(s)).
+     1>InitializeBuildStatus:
+         Creating "SeededRegionGrower.dir\Debug\SeededRegionGrower.unsuccessfulbuild" because "AlwaysCreate" was specified.
+       CustomBuild:
+         Building Custom Rule C:/Users/jon/Documents/GitHub/bio/biomed/CMakeLists.txt
+         CMake does not need to re-run because C:\Users\jon\Documents\GitHub\bio\biomed\bin\CMakeFiles\generate.stamp is up-to-date.
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /IC:\Users\jon\Documents\GitHub\bio\biomed\bin\ITKIOFactoryRegistration /IC:\itk\src\Modules\Segmentation\Watersheds\include /IC:\vtk\src\Imaging\Sources /IC:\vtk\bin10\Imaging\Sources /IC:\vtk\src\Interaction\Style /IC:\vtk\bin10\Interaction\Style /IC:\vtk\src\ThirdParty\ftgl /IC:\vtk\bin10\ThirdParty\ftgl /IC:\vtk\src\ThirdParty\ftgl\src /IC:\vtk\src\ThirdParty\freetype /IC:\vtk\bin10\ThirdParty\freetype /IC:\vtk\src\Rendering\FreeType /IC:\vtk\bin10\Rendering\FreeType /IC:\vtk\src\Utilities\EncodeString /IC:\vtk\bin10\Utilities\EncodeString /IC:\vtk\src\Utilities\ParseOGLExt /IC:\vtk\bin10\Utilities\ParseOGLExt /IC:\vtk\src\ThirdParty\tiff /IC:\vtk\bin10\ThirdParty\tiff /IC:\vtk\src\ThirdParty\png /IC:\vtk\bin10\ThirdParty\png /IC:\vtk\src\ThirdParty\jpeg /IC:\vtk\bin10\ThirdParty\jpeg /IC:\vtk\src\ThirdParty\zlib /IC:\vtk\bin10\ThirdParty\zlib /IC:\vtk\src\IO\Core /IC:\vtk\bin10\IO\Core /IC:\vtk\src\IO\Image /IC:\vtk\bin10\IO\Image /IC:\vtk\src\Imaging\Hybrid /IC:\vtk\bin10\Imaging\Hybrid /IC:\vtk\src\Rendering\OpenGL /IC:\vtk\bin10\Rendering\OpenGL /IC:\vtk\src\Filters\Sources /IC:\vtk\bin10\Filters\Sources /IC:\vtk\src\Filters\Geometry /IC:\vtk\bin10\Filters\Geometry /IC:\vtk\src\ThirdParty\alglib /IC:\vtk\bin10\ThirdParty\alglib /IC:\vtk\src\Imaging\Core /IC:\vtk\bin10\Imaging\Core /IC:\vtk\src\Imaging\Fourier /IC:\vtk\bin10\Imaging\Fourier /IC:\vtk\src\Filters\Statistics /IC:\vtk\bin10\Filters\Statistics /IC:\vtk\src\Common\ComputationalGeometry /IC:\vtk\bin10\Common\ComputationalGeometry /IC:\vtk\src\Filters\General /IC:\vtk\bin10\Filters\General /IC:\vtk\src\Filters\Core /IC:\vtk\bin10\Filters\Core /IC:\vtk\src\Filters\Extraction /IC:\vtk\bin10\Filters\Extraction /IC:\vtk\src\Common\Transforms /IC:\vtk\bin10\Common\Transforms /IC:\vtk\src\Common\System /IC:\vtk\bin10\Common\System /IC:\vtk\src\Common\Misc /IC:\vtk\bin10\Common\Misc /IC:\vtk\src\Common\Math /IC:\vtk\bin10\Common\Math /IC:\vtk\src\Common\DataModel /IC:\vtk\bin10\Common\DataModel /IC:\vtk\src\Common\ExecutionModel /IC:\vtk\bin10\Common\ExecutionModel /IC:\vtk\src\Rendering\Core /IC:\vtk\bin10\Rendering\Core /IC:\vtk\src\Utilities\KWSys /IC:\vtk\bin10\Utilities\KWSys /IC:\vtk\src\Common\Core /IC:\vtk\bin10\Common\Core /IC:\itk\src\Modules\Bridge\VtkGlue\include /IC:\itk\src\Modules\Segmentation\Voronoi\include /IC:\itk\src\Modules\Video\IO\include /IC:\itk\src\Modules\Video\Filtering\include /IC:\itk\src\Modules\Video\Core\include /IC:\itk\src\Modules\Bridge\VTK\include /IC:\itk\src\Modules\Core\TestKernel\include /IC:\itk\src\Modules\Filtering\SpatialFunction\include /IC:\itk\src\Modules\Registration\RegistrationMethodsv4\include /IC:\itk\src\Modules\Segmentation\RegionGrowing\include /IC:\itk\src\Modules\Filtering\QuadEdgeMeshFiltering\include /IC:\itk\src\Modules\Numerics\NeuralNetworks\include /IC:\itk\src\Modules\Registration\Metricsv4\include /IC:\itk\src\Modules\Numerics\Optimizersv4\include /IC:\itk\src\Modules\Segmentation\MarkovRandomFieldsClassifiers\include /IC:\itk\src\Modules\Segmentation\LevelSetsv4\include /IC:\itk\src\Modules\Segmentation\LabelVoting\include /IC:\itk\src\Modules\Segmentation\KLMRegionGrowing\include /IC:\itk\src\Modules\Filtering\ImageNoise\include /IC:\itk\src\Modules\Filtering\ImageFusion\include /IC:\itk\src\Modules\IO\VTK\include /IC:\itk\src\Modules\IO\TransformMatlab\include /IC:\itk\src\Modules\IO\TransformInsightLegacy\include /IC:\itk\src\Modules\IO\TransformHDF5\include /IC:\itk\src\Modules\IO\TransformBase\include /IC:\itk\src\Modules\IO\Stimulate\include /IC:\itk\src\Modules\IO\Siemens\include /IC:\itk\src\Modules\IO\RAW\include /IC:\itk\src\Modules\IO\PNG\include /IC:\itk\src\Modules\ThirdParty\PNG\src /IC:\itk\bin\Modules\ThirdParty\PNG\src /IC:\itk\src\Modules\IO\NRRD\include /IC:\itk\src\Modules\ThirdParty\NrrdIO\src\NrrdIO /IC:\itk\bin\Modules\ThirdParty\NrrdIO\src\NrrdIO /IC:\itk\src\Modules\IO\NIFTI\include /IC:\itk\src\Modules\IO\Meta\include /IC:\itk\src\Modules\IO\Mesh\include /IC:\itk\src\Modules\IO\MRC\include /IC:\itk\src\Modules\IO\LSM\include /IC:\itk\src\Modules\IO\TIFF\include /IC:\itk\src\Modules\ThirdParty\TIFF\src /IC:\itk\bin\Modules\ThirdParty\TIFF\src\itktiff /IC:\itk\bin\Modules\ThirdParty\TIFF\src /IC:\itk\src\Modules\IO\JPEG\include /IC:\itk\src\Modules\ThirdParty\JPEG\src /IC:\itk\bin\Modules\ThirdParty\JPEG\src /IC:\itk\src\Modules\IO\HDF5\include /IC:\itk\src\Modules\IO\GIPL\include /IC:\itk\src\Modules\IO\GE\include /IC:\itk\src\Modules\IO\IPL\include /IC:\itk\src\Modules\IO\GDCM\include /IC:\itk\src\Modules\IO\CSV\include /IC:\itk\src\Modules\IO\BioRad\include /IC:\itk\src\Modules\IO\BMP\include /IC:\itk\bin\Modules\ThirdParty\HDF5\src /IC:\itk\src\Modules\ThirdParty\HDF5\src /IC:\itk\src\Modules\Filtering\GPUThresholding\include /IC:\itk\src\Modules\Filtering\GPUSmoothing\include /IC:\itk\src\Modules\Registration\GPUPDEDeformable\include /IC:\itk\src\Modules\Registration\GPUCommon\include /IC:\itk\src\Modules\Filtering\GPUImageFilterBase\include /IC:\itk\src\Modules\Filtering\GPUAnisotropicSmoothing\include /IC:\itk\src\Modules\Core\GPUFiniteDifference\include /IC:\itk\src\Modules\Core\GPUCommon\include /IC:\itk\src\Modules\ThirdParty\GIFTI\src\gifticlib /IC:\itk\src\Modules\ThirdParty\NIFTI\src\nifti\znzlib /IC:\itk\src\Modules\ThirdParty\NIFTI\src\nifti\niftilib /IC:\itk\src\Modules\ThirdParty\GDCM\src\gdcm\Source\DataStructureAndEncodingDefinition /IC:\itk\src\Modules\ThirdParty\GDCM\src\gdcm\Source\MessageExchangeDefinition /IC:\itk\src\Modules\ThirdParty\GDCM\src\gdcm\Source\InformationObjectDefinition /IC:\itk\src\Modules\ThirdParty\GDCM\src\gdcm\Source\Common /IC:\itk\src\Modules\ThirdParty\GDCM\src\gdcm\Source\DataDictionary /IC:\itk\src\Modules\ThirdParty\GDCM\src\gdcm\Source\MediaStorageAndFileFormat /IC:\itk\bin\Modules\ThirdParty\GDCM\src\gdcm\Source\Common /IC:\itk\bin\Modules\ThirdParty\GDCM /IC:\itk\src\Modules\ThirdParty\OpenJPEG\src\openjpeg /IC:\itk\bin\Modules\ThirdParty\OpenJPEG\src\openjpeg /IC:\itk\src\Modules\Registration\FEM\include /IC:\itk\src\Modules\Registration\PDEDeformable\include /IC:\itk\src\Modules\Numerics\FEM\include /IC:\itk\src\Modules\Registration\Common\include /IC:\itk\src\Modules\IO\SpatialObjects\include /IC:\itk\src\Modules\IO\XML\include /IC:\itk\src\Modules\ThirdParty\Expat\src\expat /IC:\itk\bin\Modules\ThirdParty\Expat\src\expat /IC:\itk\src\Modules\Numerics\Eigen\include /IC:\itk\src\Modules\Filtering\DisplacementField\include /IC:\itk\src\Modules\Filtering\DiffusionTensorImage\include /IC:\itk\src\Modules\Filtering\Denoising\include /IC:\itk\src\Modules\Segmentation\DeformableMesh\include /IC:\itk\src\Modules\Filtering\Deconvolution\include /IC:\itk\src\Modules\ThirdParty\DICOMParser\src\DICOMParser /IC:\itk\bin\Modules\ThirdParty\DICOMParser\src\DICOMParser /IC:\itk\src\Modules\Filtering\Convolution\include /IC:\itk\src\Modules\Filtering\FFT\include /IC:\itk\src\Modules\Filtering\Colormap\include /IC:\itk\src\Modules\Segmentation\Classifiers\include /IC:\itk\src\Modules\Segmentation\BioCell\include /IC:\itk\src\Modules\Filtering\BiasCorrection\include /IC:\itk\src\Modules\Numerics\Polynomials\include /IC:\itk\src\Modules\Filtering\AntiAlias\include /IC:\itk\src\Modules\Segmentation\LevelSets\include /IC:\itk\src\Modules\Segmentation\SignedDistanceFunction\include /IC:\itk\src\Modules\Numerics\Optimizers\include /IC:\itk\src\Modules\Filtering\ImageFeature\include /IC:\itk\src\Modules\Filtering\ImageSources\include /IC:\itk\src\Modules\Filtering\ImageGradient\include /IC:\itk\src\Modules\Filtering\Smoothing\include /IC:\itk\src\Modules\Filtering\ImageCompare\include /IC:\itk\src\Modules\Filtering\FastMarching\include /IC:\itk\src\Modules\Core\QuadEdgeMesh\include /IC:\itk\src\Modules\Filtering\DistanceMap\include /IC:\itk\src\Modules\Numerics\NarrowBand\include /IC:\itk\src\Modules\Filtering\BinaryMathematicalMorphology\include /IC:\itk\src\Modules\Filtering\LabelMap\include /IC:\itk\src\Modules\Filtering\MathematicalMorphology\include /IC:\itk\src\Modules\Segmentation\ConnectedComponents\include /IC:\itk\src\Modules\Filtering\Thresholding\include /IC:\itk\src\Modules\Filtering\ImageLabel\include /IC:\itk\src\Modules\Filtering\ImageIntensity\include /IC:\itk\src\Modules\Filtering\Path\include /IC:\itk\src\Modules\Filtering\ImageStatistics\include /IC:\itk\src\Modules\Core\SpatialObjects\include /IC:\itk\src\Modules\ThirdParty\MetaIO\src\MetaIO /IC:\itk\bin\Modules\ThirdParty\MetaIO\src\MetaIO /IC:\itk\src\Modules\ThirdParty\ZLIB\src /IC:\itk\bin\Modules\ThirdParty\ZLIB\src /IC:\itk\src\Modules\Core\Mesh\include /IC:\itk\src\Modules\IO\ImageBase\include /IC:\itk\bin\Modules\IO\ImageBase /IC:\itk\src\Modules\Filtering\ImageCompose\include /IC:\itk\src\Modules\Filtering\AnisotropicSmoothing\include /IC:\itk\src\Modules\Filtering\ImageGrid\include /IC:\itk\src\Modules\Core\ImageFunction\include /IC:\itk\src\Modules\Core\Transform\include /IC:\itk\src\Modules\Numerics\Statistics\include /IC:\itk\bin\Modules\ThirdParty\Netlib /IC:\itk\src\Modules\Core\ImageAdaptors\include /IC:\itk\src\Modules\Filtering\CurvatureFlow\include /IC:\itk\src\Modules\Filtering\ImageFilterBase\include /IC:\itk\src\Modules\Core\FiniteDifference\include /IC:\itk\src\Modules\Core\Common\include /IC:\itk\bin\Modules\Core\Common /IC:\itk\src\Modules\ThirdParty\VNLInstantiation\include /IC:\itk\bin\Modules\ThirdParty\VNL\src\vxl\core /IC:\itk\bin\Modules\ThirdParty\VNL\src\vxl\vcl /IC:\itk\bin\Modules\ThirdParty\VNL\src\vxl\v3p\netlib /IC:\itk\src\Modules\ThirdParty\VNL\src\vxl\core /IC:\itk\src\Modules\ThirdParty\VNL\src\vxl\vcl /IC:\itk\src\Modules\ThirdParty\VNL\src\vxl\v3p\netlib /IC:\itk\bin\Modules\ThirdParty\KWSys\src /I"C:\itk\src\Modules\ThirdParty\DoubleConversion\src\double-conversion" /Zi /nologo /W3 /WX- /Od /Ob0 /Oy- /D WIN32 /D _WINDOWS /D _DEBUG /D vtkRenderingCore_INCLUDE= /D "C:/itk/bin/CMakeFiles/vtkRenderingCore_AUTOINIT_vtkInteractionStyle_vtkRenderingFreeType_vtkRenderingOpenGL.h\"\"" /D ITK_IO_FACTORY_REGISTER_MANAGER /D "CMAKE_INTDIR=\"Debug\"" /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"SeededRegionGrower.dir\Debug\\" /Fd"SeededRegionGrower.dir\Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt ..\src\Segmentation\SeededRegionGrower.cxx  /bigobj 
+         SeededRegionGrower.cxx
+     1>c:\itk\src\modules\thirdparty\gdcm\src\gdcm\source\datastructureandencodingdefinition\gdcmVR.h(168): warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\string.h(157) : see declaration of 'strerror'
+     1>c:\itk\src\modules\thirdparty\gdcm\src\gdcm\source\datastructureandencodingdefinition\gdcmByteValue.h(42): warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\string.h(157) : see declaration of 'strerror'
+     1>c:\itk\src\modules\thirdparty\gdcm\src\gdcm\source\datastructureandencodingdefinition\gdcmByteValue.h(82): warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\string.h(157) : see declaration of 'strerror'
+     1>c:\itk\src\modules\thirdparty\gdcm\src\gdcm\source\datastructureandencodingdefinition\gdcmByteValue.h(153): warning C4996: 'strerror': This function or variable may be unsafe. Consider using strerror_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\string.h(157) : see declaration of 'strerror'
+     1>C:\Program Files\Microsoft Visual Studio 10.0\VC\include\xutility(2801): warning C4996: 'std::_Fill_n': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators'
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\xutility(2787) : see declaration of 'std::_Fill_n'
+                 c:\itk\src\modules\core\common\include\itkImage.hxx(87) : see reference to function template instantiation 'void std::fill_n<TElement*,unsigned long,TPixel>(_OutIt,_Diff,const _Ty &)' being compiled
+                 with
+                 [
+                     TElement=short,
+                     TPixel=PixelType,
+                     _OutIt=short *,
+                     _Diff=unsigned long,
+                     _Ty=PixelType
+                 ]
+                 c:\itk\src\modules\core\common\include\itkImage.hxx(83) : while compiling class template member function 'void itk::Image<TPixel,VImageDimension>::FillBuffer(const TPixel &)'
+                 with
+                 [
+                     TPixel=PixelType,
+                     VImageDimension=3
+                 ]
+                 c:\users\jon\documents\github\bio\biomed\src\segmentation\SeededRegionGrower.h(21) : see reference to class template instantiation 'itk::Image<TPixel,VImageDimension>' being compiled
+                 with
+                 [
+                     TPixel=PixelType,
+                     VImageDimension=3
+                 ]
+     1>C:\Program Files\Microsoft Visual Studio 10.0\VC\include\xutility(2227): warning C4996: 'std::_Copy_impl': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators'
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\xutility(2212) : see declaration of 'std::_Copy_impl'
+                 c:\itk\src\modules\core\common\include\itkImportImageContainer.hxx(72) : see reference to function template instantiation '_OutIt std::copy<TElement*,TElement*>(_InIt,_InIt,_OutIt)' being compiled
+                 with
+                 [
+                     _OutIt=short *,
+                     TElement=short,
+                     _InIt=short *
+                 ]
+                 c:\itk\src\modules\core\common\include\itkImportImageContainer.hxx(60) : while compiling class template member function 'void itk::ImportImageContainer<TElementIdentifier,TElement>::Reserve(unsigned long,const bool)'
+                 with
+                 [
+                     TElementIdentifier=unsigned long,
+                     TElement=short
+                 ]
+                 c:\itk\src\modules\core\common\include\itkImportImageContainer.hxx(38) : while compiling class template member function 'itk::ImportImageContainer<TElementIdentifier,TElement>::ImportImageContainer(void)'
+                 with
+                 [
+                     TElementIdentifier=unsigned long,
+                     TElement=short
+                 ]
+                 c:\itk\src\modules\core\common\include\itkImage.h(152) : see reference to class template instantiation 'itk::ImportImageContainer<TElementIdentifier,TElement>' being compiled
+                 with
+                 [
+                     TElementIdentifier=unsigned long,
+                     TElement=short
+                 ]
+     1>c:\itk\src\modules\io\imagebase\include\itkImageSeriesWriter.hxx(158): warning C4996: 'sprintf': This function or variable may be unsafe. Consider using sprintf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\stdio.h(371) : see declaration of 'sprintf'
+                 c:\itk\src\modules\io\imagebase\include\itkImageSeriesWriter.hxx(133) : while compiling class template member function 'void itk::ImageSeriesWriter<TInputImage,TOutputImage>::GenerateNumericFileNames(void)'
+                 with
+                 [
+                     TInputImage=DICOMImage,
+                     TOutputImage=DICOMSlice
+                 ]
+                 c:\itk\src\modules\io\imagebase\include\itkImageSeriesWriter.hxx(66) : while compiling class template member function 'const itk::Image<TPixel,VImageDimension> *itk::ImageSeriesWriter<TInputImage,TOutputImage>::GetInput(void)'
+                 with
+                 [
+                     TPixel=PixelType,
+                     VImageDimension=3,
+                     TInputImage=DICOMImage,
+                     TOutputImage=DICOMSlice
+                 ]
+                 c:\itk\src\modules\io\imagebase\include\itkImageSeriesWriter.hxx(55) : while compiling class template member function 'void itk::ImageSeriesWriter<TInputImage,TOutputImage>::SetInput(const itk::Image<TPixel,VImageDimension> *)'
+                 with
+                 [
+                     TInputImage=DICOMImage,
+                     TOutputImage=DICOMSlice,
+                     TPixel=PixelType,
+                     VImageDimension=3
+                 ]
+                 ..\src\Segmentation\SeededRegionGrower.cxx(167) : see reference to class template instantiation 'itk::ImageSeriesWriter<TInputImage,TOutputImage>' being compiled
+                 with
+                 [
+                     TInputImage=DICOMImage,
+                     TOutputImage=DICOMSlice
+                 ]
+     1>C:\Program Files\Microsoft Visual Studio 10.0\VC\include\xutility(2227): warning C4996: 'std::_Copy_impl': Function call with parameters that may be unsafe - this call relies on the caller to check that the passed values are correct. To disable this warning, use -D_SCL_SECURE_NO_WARNINGS. See documentation on how to use Visual C++ 'Checked Iterators'
+                 C:\Program Files\Microsoft Visual Studio 10.0\VC\include\xutility(2212) : see declaration of 'std::_Copy_impl'
+                 c:\itk\src\modules\io\imagebase\include\itkImageFileReader.hxx(439) : see reference to function template instantiation '_OutIt std::copy<const short*,short*>(_InIt,_InIt,_OutIt)' being compiled
+                 with
+                 [
+                     _OutIt=short *,
+                     _InIt=const short *
+                 ]
+                 c:\itk\src\modules\io\imagebase\include\itkImageFileReader.hxx(353) : while compiling class template member function 'void itk::ImageFileReader<TOutputImage>::GenerateData(void)'
+                 with
+                 [
+                     TOutputImage=DICOMImage
+                 ]
+                 c:\itk\src\modules\io\imagebase\include\itkImageSeriesReader.hxx(131) : see reference to class template instantiation 'itk::ImageFileReader<TOutputImage>' being compiled
+                 with
+                 [
+                     TOutputImage=DICOMImage
+                 ]
+                 c:\itk\src\modules\io\imagebase\include\itkImageSeriesReader.hxx(94) : while compiling class template member function 'void itk::ImageSeriesReader<TOutputImage>::GenerateOutputInformation(void)'
+                 with
+                 [
+                     TOutputImage=DICOMImage
+                 ]
+                 ..\src\Segmentation\SeededRegionGrower.cxx(209) : see reference to class template instantiation 'itk::ImageSeriesReader<TOutputImage>' being compiled
+                 with
+                 [
+                     TOutputImage=DICOMImage
+                 ]
+       Lib:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\Lib.exe /OUT:"C:\Users\jon\Documents\GitHub\bio\biomed\bin\Debug\SeededRegionGrower.lib" /NOLOGO SeededRegionGrower.dir\Debug\SeededRegionGrower.obj
+         SeededRegionGrower.vcxproj -> C:\Users\jon\Documents\GitHub\bio\biomed\bin\Debug\SeededRegionGrower.lib
+       FinalizeBuildStatus:
+         Deleting file "SeededRegionGrower.dir\Debug\SeededRegionGrower.unsuccessfulbuild".
+         Touching "SeededRegionGrower.dir\Debug\SeededRegionGrower.lastbuildstate".
+     1>Done Building Project "C:\Users\jon\Documents\GitHub\bio\biomed\bin\SeededRegionGrower.vcxproj" (build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:11.85
