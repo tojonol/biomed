@@ -73,7 +73,7 @@ CMAKE_EXE_LINKER_FLAGS_RELEASE:STRING=/INCREMENTAL:NO
 CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO:STRING=/debug /INCREMENTAL
 
 //Install path prefix, prepended onto install directories.
-CMAKE_INSTALL_PREFIX:PATH=C:/Program Files/hello
+CMAKE_INSTALL_PREFIX:PATH=C:\Program Files\hello
 
 //Path to a program.
 CMAKE_LINKER:FILEPATH=C:/Program Files/Microsoft Visual Studio 10.0/VC/bin/link.exe
@@ -150,7 +150,7 @@ CMAKE_VERBOSE_MAKEFILE:BOOL=OFF
 
 //The directory containing FLTKConfig.cmake.  This is either the
 // root of the build tree, or PREFIX/lib/fltk for an installation.
-FLTK_DIR:PATH=C:/fltk/bin
+FLTK_DIR:PATH=C:\fltk\bin
 
 //Path to a program.
 FLTK_FLUID_EXECUTABLE:FILEPATH=C:\fltk\bin\bin\Debug

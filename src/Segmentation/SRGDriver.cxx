@@ -6,7 +6,9 @@
 
 int main(int argc, char* argv[]) {
   //std::string series_dir = "/Users/lanny/Downloads/Head-Neck Cetuximab-Demo/0522c0001/1.3.6.1.4.1.14519.5.2.1.5099.8010.199920086920823171706454903251/scaled/";
-  std::string series_dir = "/Users/lanny/Downloads/Head-Neck Cetuximab-Demo/0522c0013/1.3.6.1.4.1.14519.5.2.1.5099.8010.304837808445176109867630712750/scaled/";
+  //std::string series_dir = "/Users/lanny/Downloads/Head-Neck Cetuximab-Demo/0522c0013/1.3.6.1.4.1.14519.5.2.1.5099.8010.304837808445176109867630712750/scaled/";
+  std::string series_dir = argv[1]; 
+  std::string end_dir = argv[2];
 
   DICOMImage::Pointer image;
   try {
@@ -135,9 +137,10 @@ int main(int argc, char* argv[]) {
     results.find("skull")->second->members.size(),
     results.find("space")->second->members.size());
 
-  SeededRegionGrower::WriteImage(brain, "/Users/lanny/test_dir/brain");
-  SeededRegionGrower::WriteImage(skull, "/Users/lanny/test_dir/skull");
-  SeededRegionGrower::WriteImage(space, "/Users/lanny/test_dir/space");
+  SeededRegionGrower::WriteImage(brain, end_dir);
+  //SeededRegionGrower::WriteImage(brain, "/Users/lanny/test_dir/brain");
+ // SeededRegionGrower::WriteImage(skull, "/Users/lanny/test_dir/skull");
+  //SeededRegionGrower::WriteImage(space, "/Users/lanny/test_dir/space");
   //SeededRegionGrower::WriteImage(image, "/Users/lanny/test_dir");
 
   return 0;
