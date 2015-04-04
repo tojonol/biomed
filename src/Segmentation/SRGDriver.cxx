@@ -132,12 +132,16 @@ int main(int argc, char* argv[]) {
     skull = results.find("skull")->second->Render(image),
     space = results.find("space")->second->Render(image);
 
+  /*
   printf("Brain vox count: %d\nSkull vox count: %d\nSpace vox count: %d\n",
     results.find("brain")->second->members.size(),
     results.find("skull")->second->members.size(),
     results.find("space")->second->members.size());
+    */
 
-  SeededRegionGrower::WriteImage(brain, end_dir);
+  SeededRegionGrower::WriteImage(brain, end_dir+"/brain");
+  SeededRegionGrower::WriteImage(skull, end_dir+"/skull");
+  SeededRegionGrower::WriteImage(space, end_dir+"/space");
   //SeededRegionGrower::WriteImage(brain, "/Users/lanny/test_dir/brain");
  // SeededRegionGrower::WriteImage(skull, "/Users/lanny/test_dir/skull");
   //SeededRegionGrower::WriteImage(space, "/Users/lanny/test_dir/space");

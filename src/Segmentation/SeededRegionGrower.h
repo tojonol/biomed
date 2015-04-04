@@ -27,6 +27,10 @@ typedef itk::NumericSeriesFileNames OutputNamesGeneratorType;
 typedef std::map<std::string, IndexList*> RegionSeeds;
 typedef itk::ImageSeriesWriter<DICOMImage, DICOMSlice> SeriesWriterType;
 
+// tenative typedefs
+typedef itk::Image<char, 3> USO; // USO == Unholy State Object, you're welcome
+typedef USO::Pointer USOP;
+
 struct IndexComp {
  bool operator()(
      const DICOMImage::IndexType &i1,
@@ -39,15 +43,18 @@ class Region {
   public:
     std::string name;
     int mean;
-    IndexSet members;
+    char id;
+    USOP usop;
   private:
     int count, sum;
+    static char next_id;
 
   public:
     Region(
         std::string name,
         IndexList seeds,
-        DICOMImageP image);
+        DICOMImageP image,
+        USOP usop);
     DICOMImageP Render(
         DICOMImageP original_image);
     void AddPixel(
@@ -102,7 +109,7 @@ class SeededRegionGrower {
         DICOMImageP image,
         DICOMImage::IndexType idx);
     static void FilterTouched(
-        IndexSet &touched,
+        USOP uso,
         IndexList *idx_list);
     static void WriteImage(
         DICOMImageP image,

@@ -61,24 +61,39 @@ bool IndexComp::operator()(
  return false;
 }
 
+char Region::next_id = 1;
+
 DICOMImageP Region::Render(DICOMImageP original_image) {
   DICOMImageP new_image = DICOMImage::New();
-  new_image->SetRegions(original_image->GetLargestPossibleRegion());
+  DICOMImage::RegionType lpr = original_image->GetLargestPossibleRegion();
+  new_image->SetRegions(lpr);
   new_image->Allocate();
   new_image->FillBuffer(-1000);
 
-  IndexSet::iterator it;
-  for (it=this->members.begin(); it!=this->members.end(); it++) {
-    new_image->SetPixel(*it, original_image->GetPixel(*it));
+  int xm = lpr.GetSize(0),
+    ym = lpr.GetSize(1),
+    zm = lpr.GetSize(2);
+  for (int x=0; x<xm; x++) {
+    for (int y=0; y<ym; y++) {
+      for (int z=0; z<zm; z++) {
+        DICOMImage::IndexType idx = {x, y, z};
+        if (this->IsMember(idx)) {
+          new_image->SetPixel(idx, original_image->GetPixel(idx));
+        }
+      }
+    }
   }
 
   return new_image;
 }
 
-Region::Region(std::string name, IndexList seeds, DICOMImageP image) {
+Region::Region(std::string name, IndexList seeds, DICOMImageP image,
+    USOP usop) {
   printf("Stats for region %s:\n", name.c_str());
   this->name = name;
   this->sum = this->mean = this->count = 0;
+  this->id = Region::next_id++;
+  this->usop = usop;
 
   for (IndexList::iterator it=seeds.begin(); it!=seeds.end(); it++) {
     DICOMImage::IndexType idx = *it;
@@ -96,7 +111,7 @@ void Region::AddPixel(DICOMImage::IndexType idx, DICOMImageP image) {
 
 void Region::AddPixel(
     DICOMImage::IndexType idx, DICOMImageP image, bool update) {
-  this->members.insert(idx);
+  this->usop->SetPixel(idx, this->id);
 
   if (update) {
     this->sum += image->GetPixel(idx);
@@ -106,14 +121,15 @@ void Region::AddPixel(
 }
 
 bool Region::IsMember(DICOMImage::IndexType idx) {
-  return !!this->members.count(idx);
+  return this->usop->GetPixel(idx) == this->id;
 }
 
 void SeededRegionGrower::FilterTouched(
-    IndexSet &touched, IndexList *idx_list) {
+    USOP uso, IndexList *idx_list) {
   IndexList::iterator it=idx_list->begin();
+
   while (it != idx_list->end()) {
-    if (touched.count(*it)) {
+    if (uso->GetPixel(*it) != 0) {
       it = idx_list->erase(it);
       continue;
     }
@@ -179,7 +195,9 @@ void SeededRegionGrower::WriteImage(DICOMImageP image, std::string path) {
 };
 
 Region *SeededRegionGrower::GetBestBorderingRegion(
-    std::set<Region*> &regions, DICOMImage::IndexType idx, DICOMImageP image) {
+    std::set<Region*> &regions,
+    DICOMImage::IndexType idx,
+    DICOMImageP image) {
   IndexList neighbors = SeededRegionGrower::GetNeighbors(image, idx);
   Region *best_region;
   PixelType best_delta = SHRT_MAX,
@@ -224,7 +242,11 @@ DICOMImageP SeededRegionGrower::LoadImage(std::string path) {
 SegmentationResults SeededRegionGrower::Segment(
     DICOMImageP image, RegionSeeds seeds) {
   std::set<Region*> regions;
-  IndexSet touched;
+  USOP uso = USO::New();
+  DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
+  uso->SetRegions(lpr);
+  uso->Allocate();
+  uso->FillBuffer(0);
 
   // Not a list and only weakly sorted, w/e easier to read next to the '94 paper
   std::vector<RatedVox*> SSL;
@@ -235,7 +257,7 @@ SegmentationResults SeededRegionGrower::Segment(
     std::string region_name = it->first;
     IndexList region_seeds = *(it->second);
 
-    Region *region = new Region(region_name, region_seeds, image);
+    Region *region = new Region(region_name, region_seeds, image, uso);
     regions.insert(region);
 
     // Insert each seed point into the touched set so we don't visit it
@@ -243,7 +265,6 @@ SegmentationResults SeededRegionGrower::Segment(
     for(IndexList::iterator it2=region_seeds.begin();
         it2 != region_seeds.end(); it2++) {
       DICOMImage::IndexType idx = *it2;
-      touched.insert(idx);
 
       //RatedVox *seed = new RatedVox(idx, image, region);
       //region->AddPixel(idx, image, true);
@@ -252,7 +273,6 @@ SegmentationResults SeededRegionGrower::Segment(
       IndexList neighbors = SeededRegionGrower::GetNeighbors(image, idx);
       for (IndexList::iterator it3=neighbors.begin();
           it3!=neighbors.end(); it3++) {
-        touched.insert(*it3);
         RatedVox *neighbor = new RatedVox(*it3, image, region);
         SSL.push_back(neighbor);
         std::push_heap(SSL.begin(), SSL.end(), VoxComp());
@@ -267,7 +287,7 @@ SegmentationResults SeededRegionGrower::Segment(
     //SSLStatus(SSL, regions, image);
 
     if (!(i++ % 10000)) {
-      printf("%d voxels have been touched\n", touched.size());
+      printf("On cycle %d\n", i);
     }
 
     // Vectors are straight retarded, std is a pile of junk
@@ -289,7 +309,7 @@ SegmentationResults SeededRegionGrower::Segment(
     best_region->AddPixel(vox->idx, image);
 
     IndexList neighbors = vox->GetNeighbors(image);
-    SeededRegionGrower::FilterTouched(touched, &neighbors);
+    SeededRegionGrower::FilterTouched(uso, &neighbors);
 
     for (IndexList::iterator it=neighbors.begin(); it!=neighbors.end(); it++) {
       best_region = SeededRegionGrower::GetBestBorderingRegion(
@@ -298,7 +318,7 @@ SegmentationResults SeededRegionGrower::Segment(
       candidate = new RatedVox(*it, image, best_region);
       SSL.push_back(candidate);
       std::push_heap(SSL.begin(), SSL.end(), VoxComp());
-      touched.insert(*it);
+      uso->SetPixel(*it, -1);
     }
   }
 
