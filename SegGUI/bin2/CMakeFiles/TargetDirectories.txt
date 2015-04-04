@@ -1,3 +1,0 @@
-C:/Users/jon/Documents/GitHub/bio/biomed/SegGUI/bin2/CMakeFiles/ALL_BUILD.dir
-C:/Users/jon/Documents/GitHub/bio/biomed/SegGUI/bin2/CMakeFiles/ReadDICOMSeries.dir
-C:/Users/jon/Documents/GitHub/bio/biomed/SegGUI/bin2/CMakeFiles/ZERO_CHECK.dir
