@@ -24,6 +24,8 @@ void SSLStatus(std::vector<RatedVox*> &SSL, std::set<Region*> &regions,
 
 void SeededRegionGrower::FilterTouched(
     USOP uso, IndexList *idx_list) {
+  /* Takes the USO and a list of indicies into it/a DICOMImage and removes
+   * items that are in the SSL or a region. Modifies the list. */
   IndexList::iterator it=idx_list->begin();
 
   while (it != idx_list->end()) {
@@ -38,6 +40,10 @@ void SeededRegionGrower::FilterTouched(
 
 DICOMImage::IndexType SeededRegionGrower::ConvertOffset(
     DICOMImage::OffsetType offset, DICOMImage::SpacingType spacing) {
+  /* Takes a 3-tuple of floats in DICOM measurements (mm I guess) and returns
+   * an index that best fits that point in space. This is important because
+   * these offset measrues will remain constant across rescales but indicies
+   * will not. Also ImageJ gives you spacial offsets insteaf of indicies. */
   DICOMImage::IndexType idx = {
     (DICOMImage::IndexValueType)(offset[0] / spacing[0]),
     (DICOMImage::IndexValueType)(offset[1] / spacing[1]),
@@ -47,6 +53,9 @@ DICOMImage::IndexType SeededRegionGrower::ConvertOffset(
 
 IndexList SeededRegionGrower::GetNeighbors(
     DICOMImageP image, DICOMImage::IndexType idx) {
+  /* Returns a list of indicies that are neighbors to the argument index.
+   * Removes indicies that are out of the image boundries and does not include
+   * the argument index */
   IndexList neighbors;
   DICOMImage::RegionType bounds = image->GetLargestPossibleRegion();
 
@@ -72,6 +81,9 @@ IndexList SeededRegionGrower::GetNeighbors(
 }
 
 void SeededRegionGrower::WriteImage(DICOMImageP image, std::string path) {
+  /* Takes a DICOMImage and writes a series of images in the DICOM format
+   * to the directory indicated by `path`. Does not attempt to create
+   * directories if path doesn't exist */
   int slices = image->GetLargestPossibleRegion().GetSize()[2];
   OutputNamesGeneratorType::Pointer outputNames =
     OutputNamesGeneratorType::New();
@@ -96,11 +108,15 @@ Region *SeededRegionGrower::GetBestBorderingRegion(
     std::set<Region*> &regions,
     DICOMImage::IndexType idx,
     DICOMImageP image) {
+  /* Returns a pointer to a the most similar region bordering a voxel. */
   IndexList neighbors = SeededRegionGrower::GetNeighbors(image, idx);
   Region *best_region;
   PixelType best_delta = SHRT_MAX,
     current_delta;
 
+  // Iterate over the neighbors, if any is in a region we compute the current
+  // vox's similarity to it (the region) tracking the minimum delta value
+  // observed so far.
   for (IndexList::iterator it=neighbors.begin(); it!=neighbors.end(); it++) {
     for (std::set<Region*>::iterator it2=regions.begin();
         it2!=regions.end(); ++it2) {
@@ -118,8 +134,9 @@ Region *SeededRegionGrower::GetBestBorderingRegion(
   return best_region;
 }
 
-
 DICOMImageP SeededRegionGrower::LoadImage(std::string path) {
+  /* Convenience method for loading a DICOM series from the directory at
+   * `path` */
   ImageIOType::Pointer gdcmIO = ImageIOType::New();
 
   InputNamesGeneratorType::Pointer inputNames = InputNamesGeneratorType::New();
@@ -139,36 +156,51 @@ DICOMImageP SeededRegionGrower::LoadImage(std::string path) {
 
 SegmentationResults SeededRegionGrower::Segment(
     DICOMImageP image, RegionSeeds seeds) {
+  /* Does all the magic of SRG segmentation. You can look at the typdef but 
+   * seeds should be a map from strings (region names) to collections of seed
+   * indicies that belong to that region. Returns a map from those region names
+   * to Regions (that is our region object, not itk::Region). */
   std::set<Region*> regions;
+
+  // The Unholy State Object (USO) is an image simply for performance reasons,
+  // what it actually does is help us track the assignment state of all the
+  // voxels in the image we're segmenting. Initially every voxel has a value of
+  // 0 meaning that it hasn't been assigned to a region nor has it been placed
+  // in the SSL. When a vox has been put in the SSL it's given the value of -1
+  // and when it's been assigned to a region it's value is set to that region's
+  // ID which is unique per colleciton of regions.
   USOP uso = USO::New();
+
+  // Just the ceremony to make the USO the same size as the image being
+  // segmented.
   DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
   uso->SetRegions(lpr);
   uso->Allocate();
   uso->FillBuffer(0);
 
-  // Not a list and only weakly sorted, w/e easier to read next to the '94 paper
+  // "Sorted Seed List", the name is just so the code reads easier next to the
+  // '94 paper. In reality it's a heap of RatedVoxs that have been scored. Note
+  // that the SSL is _just_ a heap, adding a vox to it does not update the USO
+  // which you'll need to do. If the two get out of sync bad things will happen
   std::vector<RatedVox*> SSL;
 
+  // Initialize Regions based on our seed points.
   for (RegionSeeds::iterator it=seeds.begin(); it != seeds.end(); ++it) {
-    // Copy seeds into regions (because each seed of a region is definitely
-    // going to belong to it) and we'll grow as we iterate;
     std::string region_name = it->first;
     IndexList region_seeds = *(it->second);
 
+    // The Region constructor will modify the USO and track its seeds
     Region *region = new Region(region_name, region_seeds, image, uso);
     regions.insert(region);
 
-    // Insert each seed point into the touched set so we don't visit it
-    // and add them to the SSL so their neighbors get considered next iter
+    // Add each seed point's neighbors to the SSL so we'll start by visiting
+    // them.
     for(IndexList::iterator it2=region_seeds.begin();
         it2 != region_seeds.end(); it2++) {
       DICOMImage::IndexType idx = *it2;
 
-      //RatedVox *seed = new RatedVox(idx, image, region);
-      //region->AddPixel(idx, image, true);
-
-      // And add each seed point's neighbors to the SSL
       IndexList neighbors = SeededRegionGrower::GetNeighbors(image, idx);
+
       for (IndexList::iterator it3=neighbors.begin();
           it3!=neighbors.end(); it3++) {
         RatedVox *neighbor = new RatedVox(*it3, image, region);
@@ -178,17 +210,23 @@ SegmentationResults SeededRegionGrower::Segment(
     }
   }
 
-  std::string bla;
-  int i = 0;
+  int i = 0,
+    vox_count = lpr.GetSize(0);
+
+  // Core of the algorithm right here. If you want to know how it works you
+  // should go read the paper but the quick version is that we continually pull
+  // the vox with the lowest delta value (that is, the voxel which is most
+  // similar to one of the regions it borders on) and add it to its most
+  // similar bordering region. Then we take all the neighbors of that vox that
+  // aren't already inthe SSL or a region, assign them delta values, and put
+  // them in the SSL (according to their delta values).
   while (!SSL.empty()) {
-
-    //SSLStatus(SSL, regions, image);
-
     if (!(i++ % 10000)) {
-      printf("On cycle %d\n", i);
+      printf("%d%% complete\n", i * 100 / vox_count);
     }
 
-    // Vectors are straight retarded, std is a pile of junk
+    // I know this is ugly but as far as I can tell it's just how STL is
+    // supposed to be.
     std::pop_heap(SSL.begin(), SSL.end(), VoxComp());
     RatedVox *vox = SSL.back(),
       *candidate;
@@ -199,9 +237,12 @@ SegmentationResults SeededRegionGrower::Segment(
 
     best_region->AddPixel(vox->idx, image);
 
+    // We've added the voxel under consideration to a region, now add its
+    // unvisited neighbors to the SSL
     IndexList neighbors = vox->GetNeighbors(image);
     SeededRegionGrower::FilterTouched(uso, &neighbors);
 
+    // for each neighbor calculate delta and put in the the SSL
     for (IndexList::iterator it=neighbors.begin(); it!=neighbors.end(); it++) {
       best_region = SeededRegionGrower::GetBestBorderingRegion(
         regions, *it, image);
@@ -212,6 +253,9 @@ SegmentationResults SeededRegionGrower::Segment(
       uso->SetPixel(*it, -1);
     }
   }
+
+  // Hey, the SSL is empty. That must mean that every voxel has been assigned
+  // to a region. Great, return results.
 
   SegmentationResults results;
   std::set<Region*>::iterator it;
