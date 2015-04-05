@@ -8,7 +8,8 @@
 
 void SSLStatus(std::vector<RatedVox*> &SSL, std::set<Region*> &regions,
     DICOMImageP image) {
-  // Kill me
+  /* Convenience function that will spit out some debug info about the SSL,
+   * for debugging purposes only */ 
   std::vector<RatedVox*>::iterator it;
   RatedVox *vox;
   printf("Status of the SSL:\n");
@@ -19,109 +20,6 @@ void SSLStatus(std::vector<RatedVox*> &SSL, std::set<Region*> &regions,
         image->GetPixel(vox->idx));
   }
   printf("\n\n");
-}
-
-RatedVox::RatedVox(DICOMImage::IndexType index) {
-  this->idx = index;
-}
-
-RatedVox::RatedVox(
-    DICOMImage::IndexType index, DICOMImageP image, Region *region) {
-  this->idx = index;
-  this->delta = RatedVox::ComputeDelta(index, image, region);
-}
-
-IndexList RatedVox::GetNeighbors(DICOMImageP image) {
-  return SeededRegionGrower::GetNeighbors(image, this->idx);
-}
-
-int RatedVox::ComputeDelta(
-    DICOMImage::IndexType idx, DICOMImageP image, Region *region) { 
-  int intensity = image->GetPixel(idx),
-    delta = std::abs(intensity - region->mean);
-
-  return std::abs(intensity - region->mean);
-}
-
-bool VoxComp::operator()(const RatedVox *v1, const RatedVox *v2) const {
-  return v1->delta > v2->delta;
-}
-
-bool IndexComp::operator()(
-   const DICOMImage::IndexType& i1, const DICOMImage::IndexType& i2) const {
- for (int i=0; i<3; i++) {
-   if (i1[i] < i2[i]) {
-     return true;
-   } else if (i1[i] > i2[i]) {
-     return false;
-   }
- }
-
- // If i1 and i2 are equivalent
- return false;
-}
-
-char Region::next_id = 1;
-
-DICOMImageP Region::Render(DICOMImageP original_image) {
-  DICOMImageP new_image = DICOMImage::New();
-  DICOMImage::RegionType lpr = original_image->GetLargestPossibleRegion();
-  new_image->SetRegions(lpr);
-  new_image->Allocate();
-  new_image->FillBuffer(-1000);
-
-  int xm = lpr.GetSize(0),
-    ym = lpr.GetSize(1),
-    zm = lpr.GetSize(2);
-  for (int x=0; x<xm; x++) {
-    for (int y=0; y<ym; y++) {
-      for (int z=0; z<zm; z++) {
-        DICOMImage::IndexType idx = {x, y, z};
-        if (this->IsMember(idx)) {
-          new_image->SetPixel(idx, original_image->GetPixel(idx));
-        }
-      }
-    }
-  }
-
-  return new_image;
-}
-
-Region::Region(std::string name, IndexList seeds, DICOMImageP image,
-    USOP usop) {
-  printf("Stats for region %s:\n", name.c_str());
-  this->name = name;
-  this->sum = this->mean = this->count = 0;
-  this->id = Region::next_id++;
-  this->usop = usop;
-
-  for (IndexList::iterator it=seeds.begin(); it!=seeds.end(); it++) {
-    DICOMImage::IndexType idx = *it;
-    printf("  - seed point %ld, %ld, %ld with val %d\n",
-        idx[0], idx[1], idx[2], image->GetPixel(idx));
-    this->AddPixel(idx, image, true);
-  }
-
-  printf("- Mean: %d\n", this->mean);
-};
-
-void Region::AddPixel(DICOMImage::IndexType idx, DICOMImageP image) {
-  this->AddPixel(idx, image, true);
-}
-
-void Region::AddPixel(
-    DICOMImage::IndexType idx, DICOMImageP image, bool update) {
-  this->usop->SetPixel(idx, this->id);
-
-  if (update) {
-    this->sum += image->GetPixel(idx);
-    this->count++;
-    this->mean = this->sum / this->count;
-  }
-}
-
-bool Region::IsMember(DICOMImage::IndexType idx) {
-  return this->usop->GetPixel(idx) == this->id;
 }
 
 void SeededRegionGrower::FilterTouched(
@@ -295,13 +193,6 @@ SegmentationResults SeededRegionGrower::Segment(
     RatedVox *vox = SSL.back(),
       *candidate;
     SSL.pop_back();
-
-    /*
-    printf("Popped vox: %d {%d, %d, %d}, val: %d\n",
-        vox->delta, vox->idx[0], vox->idx[1], vox->idx[2],
-        image->GetPixel(vox->idx));
-    std::getline(std::cin, bla);
-    */
 
     Region *best_region = SeededRegionGrower::GetBestBorderingRegion(
         regions, vox->idx, image);
