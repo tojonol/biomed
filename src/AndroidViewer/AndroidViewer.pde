@@ -1,7 +1,7 @@
 Boxxen box;
 CutawayPlane cap;
 
-float yr = 0.0;
+float yr = PI / 4;
 float xr = -0.5;
 
 int[][][] fromStrip(int[][] strip) {
@@ -44,7 +44,7 @@ class CutawayPlane {
     pushMatrix();
     
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
-    else if (this.cutDim == DIM_Y) rotateX(HALF_PI);
+    else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
     
     // This might look a little wonky but it works since we're rotated in the 
     // plane's direction, increasing z moves us "forwards" relative to our
