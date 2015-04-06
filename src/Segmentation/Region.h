@@ -24,6 +24,7 @@ class Region {
         USOP usop);
     DICOMImageP Render(
         DICOMImageP original_image);
+    DICOMImageP RenderShell();
     void AddPixel(
         DICOMImage::IndexType idx,
         DICOMImageP image);
