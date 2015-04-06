@@ -46,8 +46,8 @@ DICOMImageP Region::RenderShell() {
         bool done = false;
 
         for (int dx=-1; dx<2 && !done; dx++) {
-          for (int dy=-1; dy<2; && !done dy++) {
-            for (int dz=-1; dz<2; && !done dz++) {
+          for (int dy=-1; dy<2 && !done; dy++) {
+            for (int dz=-1; dz<2 && !done; dz++) {
               if (abs(dx) + abs(dy) + abs(dz) == 1) {
                 DICOMImage::IndexType idx = {{x+dx, y+dy, z+dx}};
                 if (lpr.IsInside(idx)) {
