@@ -1,8 +1,11 @@
+import apwidgets.*;
+
 Boxxen box;
 CutawayPlane cap;
-
 float yr = PI / 4;
 float xr = -0.5;
+APWidgetContainer widgetContainer; 
+APButton right, left, in, out;
 
 int[][][] fromStrip(int[][] strip) {
   int[][][] triangles = new int[strip.length - 2][3][3];
@@ -228,10 +231,21 @@ class Boxxen {
 }
 
 void setup() {
+  orientation(LANDSCAPE);
   size(800, 600, P3D);
   ortho();
   box = new Boxxen();
   cap = new CutawayPlane(10, 0);
+  //Set up container and widgets
+  widgetContainer = new APWidgetContainer(this); 
+  right = new APButton(0, 50, "Right");
+  left = new APButton(0, 200, "Left"); 
+  in = new APButton(0, 350, "In"); 
+  out = new APButton(0, 500, "Out"); 
+  widgetContainer.addWidget(right); 
+  widgetContainer.addWidget(left); 
+  widgetContainer.addWidget(in); 
+  widgetContainer.addWidget(out); 
 }
 
 void draw() {
@@ -260,3 +274,27 @@ void keyPressed() {
     else if (keyCode == 45) cap.location -= 2;
   }
 }
+
+//onClickWidget is called when a widget is clicked/touched
+void onClickWidget(APWidget widget)
+{  
+  //if it was save that was clicked
+  if(widget == right)
+  { 
+    yr += 0.1;
+  }
+  //if it was cancel that was clicked
+  else if(widget == left)
+  { 
+    yr -= 0.1;
+  }
+  else if(widget == in)
+  {
+    cap.location += 2;
+  }
+  else if(widget == out)
+  {
+    cap.location -= 2;
+  }
+}
+
