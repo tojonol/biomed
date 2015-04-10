@@ -18,48 +18,6 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-
-  DICOMImage::IndexType i1 = {{1, 2, 3}},
-    i2 = {{4, 5, 6}},
-    i3 = {{7, 8, 9}},
-    i4 = {{3, 1, 6}};
-
-  RatedVox *v1 = new RatedVox(i1),
-    *v2 = new RatedVox(i2),
-    *v3 = new RatedVox(i3),
-    *v4 = new RatedVox(i4);
-
-  v1->delta = 1;
-  v2->delta = 2;
-  v3->delta = 3;
-  v4->delta = 4;
-
-  std::vector<RatedVox *> SSL;
-  SSL.push_back(v3);
-  push_heap(SSL.begin(), SSL.end(), VoxComp());
-  SSL.push_back(v1);
-  push_heap(SSL.begin(), SSL.end(), VoxComp());
-  SSL.push_back(v2);
-  push_heap(SSL.begin(), SSL.end(), VoxComp());
-  SSL.push_back(v4);
-  push_heap(SSL.begin(), SSL.end(), VoxComp());
-
-  int d1, d2, d3, d4;
-  std::pop_heap(SSL.begin(), SSL.end(), VoxComp());
-  d1 = SSL.back()->delta;
-  SSL.pop_back();
-  std::pop_heap(SSL.begin(), SSL.end(), VoxComp());
-  d2 = SSL.back()->delta;
-  SSL.pop_back();
-  std::pop_heap(SSL.begin(), SSL.end(), VoxComp());
-  d3 = SSL.back()->delta;
-  SSL.pop_back();
-  std::pop_heap(SSL.begin(), SSL.end(), VoxComp());
-  d4 = SSL.back()->delta;
-  SSL.pop_back();
-
-  printf("%d, %d, %d, %d\n", d1, d2, d3, d4);
-
   DICOMImage::SpacingType spacing = image->GetSpacing();
 
   IndexList brain_seeds, skull_seeds, space_seeds;
@@ -124,6 +82,8 @@ int main(int argc, char* argv[]) {
   seeds.insert(std::pair<std::string, IndexList*>("skull", &skull_seeds));
   seeds.insert(std::pair<std::string, IndexList*>("space", &space_seeds));
 
+  SeededRegionGrower::WriteSeedFile(seeds, "skull.seeds");
+
   printf("Starting segmentation\n");
   SegmentationResults results; 
   results = SeededRegionGrower::Segment(image, seeds);
@@ -149,4 +109,3 @@ int main(int argc, char* argv[]) {
 
   return 0;
 }
-

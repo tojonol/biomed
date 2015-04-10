@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <sstream>
 #include <vector>
 #include <set>
 #include <map>
@@ -15,12 +16,70 @@ void SSLStatus(std::vector<RatedVox*> &SSL, std::set<Region*> &regions,
   printf("Status of the SSL:\n");
   for (it=SSL.begin(); it!=SSL.end(); it++) {
     vox = *it;
-    printf("d: %d, {%d, %d, %d}, val: %d\n",
+    printf("d: %d, {%ld, %ld, %ld}, val: %d\n",
         vox->delta, vox->idx[0], vox->idx[1], vox->idx[2],
         image->GetPixel(vox->idx));
   }
   printf("\n\n");
 }
+
+RegionSeeds SeededRegionGrower::ReadSeedFile(std::string path) {
+  /* A painfully fragile parser for our crappy ad-hoc region seed 
+   * specification format. */
+  RegionSeeds seeds;
+  char *buf = (char*)(malloc(16 * 1024));
+  std::string region_name;
+
+  std::ifstream *infile = new std::ifstream(path);
+  while (!infile->eof()) {
+    std::stringstream ss;
+    infile->getline(buf, 16 * 1024);
+    ss.write(buf, strlen(buf));
+    ss >> region_name;
+
+    IndexList seed_points;
+
+    while (!ss.eof()) {
+      DICOMImage::IndexType idx = {0, 0, 0};
+      ss >> idx[0];
+      ss >> idx[1];
+      ss >> idx[2];
+
+      seed_points.push_front(idx);
+    }
+
+    seeds.insert(RegionSeeds::value_type(region_name, &seed_points));
+  }
+
+  infile->close();
+  free(infile);
+  free(buf);
+  return seeds;
+}
+
+void SeededRegionGrower::WriteSeedFile(RegionSeeds seeds, std::string path) {
+  /* Like the last thing but in reverse */
+  std::ofstream outfile;
+  outfile.open(path);
+
+  for (RegionSeeds::iterator it1=seeds.begin(); it1!=seeds.end(); it1++) {
+    IndexList seed_points= *(it1->second);
+    outfile << it1->first;
+    for (IndexList::iterator it2=seed_points.begin(); it2!=seed_points.end();
+        it2++) {
+      DICOMImage::IndexType idx = *it2;
+      outfile << ' ';
+      outfile << idx[0] << ' ';
+      outfile << idx[1] << ' ';
+      outfile << idx[2];
+    }
+
+    outfile << '\n';
+  }
+
+  outfile.close();
+}
+
 
 void SeededRegionGrower::FilterTouched(
     USOP uso, IndexList *idx_list) {
@@ -211,7 +270,7 @@ SegmentationResults SeededRegionGrower::Segment(
   }
 
   int i = 0,
-    vox_count = lpr.GetSize(0);
+    vox_count = lpr.GetSize(0) * lpr.GetSize(1) * lpr.GetSize(2);
 
   // Core of the algorithm right here. If you want to know how it works you
   // should go read the paper but the quick version is that we continually pull

@@ -20,6 +20,10 @@ class SeededRegionGrower {
     static void WriteImage(
         DICOMImageP image,
         std::string path);
+    static RegionSeeds ReadSeedFile(
+        std::string path);
+    static void WriteSeedFile(
+        RegionSeeds seeds, std::string path);
   private:
     static void FilterTouched(
         USOP uso,
