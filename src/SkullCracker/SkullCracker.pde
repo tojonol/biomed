@@ -12,6 +12,7 @@ import ketai.ui.*;
 import java.io.*;
 JSONObject json;
 JSONArray patients;
+String urlprefix = "http://alaromana.com/images/";
 PImage img;
 APWidgetContainer homeWidget, settingsWidget, clientsWidget, imageViewer, annotateView;
 APButton update, help, viewpatients, settings, back_iv, back_cw, back_sw, back_av, annotate, save;
@@ -28,6 +29,7 @@ void setup()
 //  fetchJSON();
   loadPatients();
   initializeWidgets();
+  print(width + " " + height);
 }
 
 void draw() 
@@ -36,12 +38,29 @@ void draw()
   if (view == "image")
   {
     textSize(100);
-    text(patientList.get(currentPatient).getId(), 200, 150);
+
+    pushMatrix();
+    translate(width/2, height/2);
+    rotateX(xr);
+    rotateY(yr);
+    box.draw(cap);
+    cap.draw();
+    popMatrix();
+    text(patientList.get(currentPatient).getpName(), 200, 150);
   }
   if (loading)
   {
     textSize(100);
     text("Loading Patient Data...", 0, height/2-200);
+  }
+  if (view == "annotate")
+  {
+      
+     print (patientList.get(currentPatient).getfilename());
+     String imageloc = urlprefix + patientList.get(currentPatient).getfilename();
+     print(imageloc);
+     img = loadImage(imageloc);
+     image(img,width/2,height/2);
   }
 }
 void onRotate(float x, float y, float ang)
@@ -63,6 +82,7 @@ void onPinch(float x, float y, float d)
   println("Pinch " + x + " " + y + " " + d);
 }
 
+//set active view
 void widgetOverlay()
 {
     if (view == "home")
@@ -96,6 +116,11 @@ void widgetOverlay()
       clientsWidget.hide();
       imageViewer.show(); 
       annotateView.hide(); 
+      size(1080, 1776, P3D);
+      ortho();
+      box = new Boxxen();
+//      box.loadTriangles();////////////////////////////////////////////////////////
+      cap = new CutawayPlane(10, 0);
     }
     else if (view == "annotate")
     {
@@ -106,14 +131,18 @@ void widgetOverlay()
       annotateView.show(); 
     }
 }
+
+//initialize widgets and containers
 void initializeWidgets()
 {
+    //add widget containers
     homeWidget = new APWidgetContainer(this); 
     settingsWidget = new APWidgetContainer(this); 
     clientsWidget = new APWidgetContainer(this); 
     imageViewer = new APWidgetContainer(this); 
     annotateView = new APWidgetContainer(this); 
     
+    //draw widgets
     update = new APButton(width/2, (height/2)-100 ,"Update");
     help = new APButton(width/2, (height/2)+100, "Help");
     viewpatients = new APButton(width/2, (height/2)-100 , "View Patients");
@@ -144,6 +173,128 @@ void initializeWidgets()
     widgetOverlay();
 }
 
+//fetch JSON from web and load clientlist
+void fetchJSON()
+{
+    loading = true;
+    String patientspath = urlprefix+"patients.txt";
+    String[] homePage = null;
+    homePage = loadStrings(patientspath);
+
+    StringBuilder builder = new StringBuilder();
+    for(String row : homePage) 
+    {
+        builder.append(row);
+    }
+    String json_Str = builder.toString();
+    saveJSON(json_Str);
+    patientList.clear();
+    fillPatientList(json_Str);
+    
+    loading = false;
+}
+
+//populate patient objects
+void fillPatientList(String json_Str)
+{
+    JSONObject json = JSONObject.parse(json_Str);
+    String other = json.getString("other");
+    patients = json.getJSONArray("patients");
+    for (int i = 0; i < patients.size(); i++) 
+    {
+      JSONObject patient = patients.getJSONObject(i);
+      String id = patient.getString("id");
+      String filename = patient.getString("file_name");
+      String patientname = patient.getString("name");
+      PatientData pd = new PatientData(filename, id, patientname);
+      patientList.add(pd);
+    } 
+}
+
+//read patients from device
+void loadPatients()
+{
+    File sketchDir = getFilesDir();
+    // read strings from file into tags
+    try 
+    {
+      FileReader input = new FileReader(sketchDir.getAbsolutePath() + "/" + "patientInfo" + ".txt");
+      BufferedReader bInput = new BufferedReader(input);
+      String ns = bInput.readLine();
+      StringBuilder builder = new StringBuilder();
+      while (ns != null) 
+      {
+        builder.append(ns);
+        ns = bInput.readLine();
+      }
+      String json_Str = builder.toString();
+      fillPatientList(json_Str);
+    }
+    catch (Exception e) 
+    {
+      fetchJSON();
+    }
+}
+
+//write JSON to device
+void saveJSON(String json)
+{
+    File sketchDir = getFilesDir();
+    java.io.File outFile;
+    try 
+    {
+      outFile = new java.io.File(sketchDir.getAbsolutePath() + "/"+"patientInfo"+".txt");
+      if (!outFile.exists())
+        outFile.createNewFile();
+      FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + "/"+"patientInfo"+".txt");
+
+      outWriter.write(json);
+      outWriter.flush();
+    }
+    catch (Exception e) 
+    {
+    }
+}
+
+//upon updating client information, removing old data
+void clearPatientFiles()
+{
+    File sketchDir = getFilesDir();
+    java.io.File outFile;
+    try 
+    {
+      outFile = new java.io.File(sketchDir.getAbsolutePath() + "/"+"patientInfo"+".txt");
+      outFile.delete();
+      removePatientWidgets();
+      fetchJSON();
+      addPatientWidgets(); 
+      widgetOverlay();
+    }
+    catch (Exception e) 
+    {
+    }
+}
+
+//adding buttons for the currently loaded patients
+void addPatientWidgets()
+{
+    for(int i = 0; i < patientList.size(); i++)
+    {
+      patientList.get(i).placeButton(i);
+      clientsWidget.addWidget(patientList.get(i).getButton());
+    } 
+}
+
+// remove patient widgets when resyncing
+void removePatientWidgets()
+{
+    for(int i = 0; i < patientList.size(); i++)
+    {
+      clientsWidget.removeWidget(patientList.get(i).getButton());
+    } 
+}
+
+//track what widget is clicked on
 void onClickWidget(APWidget widget)
 {  
   //if it was save that was clicked
@@ -195,118 +346,3 @@ void onClickWidget(APWidget widget)
   widgetOverlay();
 }
 
-//fetch JSON from web and load clientlist
-void fetchJSON()
-{
-    loading = true;
-    String urlprefix = "http://alaromana.com/images/";
-    String patientspath = urlprefix+"patients.txt";
-    String[] homePage = null;
-    homePage = loadStrings(patientspath);
-
-    StringBuilder builder = new StringBuilder();
-    for(String row : homePage) 
-    {
-        builder.append(row);
-    }
-    String json_Str = builder.toString();
-    saveJSON(json_Str);
-    patientList.clear();
-    JSONObject json = JSONObject.parse(json_Str);
-    String other = json.getString("other");
-    patients = json.getJSONArray("patients");
-    for (int i = 0; i < patients.size(); i++) 
-    {
-      JSONObject patient = patients.getJSONObject(i);
-      String id = patient.getString("id");
-      String filename = patient.getString("file_name");
-      PatientData pd = new PatientData(filename, id);
-      patientList.add(pd);
-    }
-    loading = false;
-}
-void loadPatients()
-{
-    File sketchDir = getFilesDir();
-    // read strings from file into tags
-    try 
-    {
-      FileReader input = new FileReader(sketchDir.getAbsolutePath() + "/" + "patientInfo" + ".txt");
-      BufferedReader bInput = new BufferedReader(input);
-      String ns = bInput.readLine();
-      StringBuilder builder = new StringBuilder();
-      while (ns != null) {
-        builder.append(ns);
-        ns = bInput.readLine();
-      }
-      String json_Str = builder.toString();
-      JSONObject json = JSONObject.parse(json_Str);
-      String other = json.getString("other");
-      patients = json.getJSONArray("patients");
-      for (int i = 0; i < patients.size(); i++) 
-      {
-        JSONObject patient = patients.getJSONObject(i);
-        String id = patient.getString("id");
-        String filename = patient.getString("file_name");
-        PatientData pd = new PatientData(filename, id);
-        patientList.add(pd);
-      }
-      print("sucess load");
-    }
-    catch (Exception e) 
-    {
-      fetchJSON();
-      print("DL");
-    }
-}
-void saveJSON(String json)
-{
-    File sketchDir = getFilesDir();
-    java.io.File outFile;
-    try 
-    {
-      outFile = new java.io.File(sketchDir.getAbsolutePath() + "/"+"patientInfo"+".txt");
-      if (!outFile.exists())
-        outFile.createNewFile();
-      FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + "/"+"patientInfo"+".txt");
-
-      outWriter.write(json);
-      outWriter.flush();
-      println("sucess save");
-    }
-    catch (Exception e) 
-    {
-    }
-}
-void clearPatientFiles()
-{
-    File sketchDir = getFilesDir();
-    java.io.File outFile;
-    try 
-    {
-      outFile = new java.io.File(sketchDir.getAbsolutePath() + "/"+"patientInfo"+".txt");
-      outFile.delete();
-      removePatientWidgets();
-      fetchJSON();
-      addPatientWidgets(); 
-      widgetOverlay();
-    }
-    catch (Exception e) 
-    {
-    }
-}
-void addPatientWidgets()
-{
-    for(int i = 0; i < patientList.size(); i++)
-    {
-      patientList.get(i).placeButton(i);
-      clientsWidget.addWidget(patientList.get(i).getButton());
-    } 
-}
-void removePatientWidgets()
-{
-    for(int i = 0; i < patientList.size(); i++)
-    {
-      clientsWidget.removeWidget(patientList.get(i).getButton());
-    } 
-}
