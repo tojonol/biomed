@@ -1,6 +1,8 @@
 public class PatientData
 {
+  String urlprefix = "http://alaromana.com/images/";
   private String filename, id, name;
+  PImage img;
   APButton button;
    public PatientData(String filename_, String id_, String name_)
   {
@@ -16,6 +18,16 @@ public class PatientData
  public APButton getButton()
  {
     return button; 
+ }
+ public void downloadImg()
+ {
+        
+     String imageloc = urlprefix + filename;
+    print(imageloc);
+     img = loadImage(imageloc);
+     
+     img.save(filename);
+//     image(img,width/2,height/2); 
  }
  public String getId()
  {

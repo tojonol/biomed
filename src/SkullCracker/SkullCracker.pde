@@ -56,10 +56,9 @@ void draw()
   if (view == "annotate")
   {
       
-     print (patientList.get(currentPatient).getfilename());
-     String imageloc = urlprefix + patientList.get(currentPatient).getfilename();
-     print(imageloc);
-     img = loadImage(imageloc);
+//     String imageloc = urlprefix + patientList.get(currentPatient).getfilename();
+
+     img = loadImage(patientList.get(currentPatient).getfilename());
      image(img,width/2,height/2);
   }
 }
@@ -190,7 +189,11 @@ void fetchJSON()
     saveJSON(json_Str);
     patientList.clear();
     fillPatientList(json_Str);
-    
+    //download images
+    for(PatientData patient : patientList)
+    {
+       patient.downloadImg(); 
+    }
     loading = false;
 }
 
