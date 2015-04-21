@@ -107,10 +107,7 @@ for (int i = 0; i < patientid.length; i++)
           //print("coord: "+coord);
           for (int value = 0; value < triangles[tri][coord].length; value++)
           {
-            
-            //print("value: "+value);
-            //print(" ->"+ triangles[tri][coord][value]+"\n");
-            triplePixel.setInt(value, triangles[tri][coord][value]);
+            triplePixel.setInt(value, (organCounter+1)*triangles[tri][coord][value]);
           }
           tripleCoord.setJSONArray(coord, triplePixel);
         }

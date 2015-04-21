@@ -18,16 +18,29 @@ APWidgetContainer homeWidget, settingsWidget, clientsWidget, imageViewer, annota
 APButton update, help, viewpatients, settings, back_iv, back_cw, back_sw, back_av, annotate, save;
 APEditText annotation;
 ArrayList<PatientData> patientList = new ArrayList<PatientData>();
-int currentPatient;
+int currentPatient, organSet;
 String view;
 boolean loading = false;
+Boxxen box;
+CutawayPlane cap;
+KetaiGesture gesture;
+float prevPinchX = -1, prevPinchY = -1;
+int prevPinchFrame = -1;
+
 
 void setup()
 {
+  textAlign(CENTER);
   imageMode(CENTER);
   orientation(PORTRAIT);
+  gesture = new KetaiGesture(this);
   loadPatients();
   initializeWidgets();
+  size(1080, 1776, P3D);
+  ortho();
+  cap = new CutawayPlane(10, 0);
+  
+  box = new Boxxen();
 }
 
 void draw() 
@@ -35,15 +48,23 @@ void draw()
   background(0);
   if (view == "image")
   {
+    if (patientList.get(currentPatient).getActiveOrgan() != organSet)
+    {
+        organSet =  patientList.get(currentPatient).getActiveOrgan();
+        box.update(patientList.get(currentPatient).getOrgan(organSet));
+    }
+    else
+    {
+    }
     textSize(50);
 
-//    pushMatrix();
-//    translate(width/2, height/2);
-//    rotateX(xr);
-//    rotateY(yr);
-//    box.draw(cap);
-//    cap.draw();
-//    popMatrix();
+    pushMatrix();
+    translate(width/2, height/2);
+    rotateX(xr);
+    rotateY(yr);
+    box.draw(cap);
+    cap.draw();
+    popMatrix();
     text(patientList.get(currentPatient).getpName(), 400, 150);
   }
   if (loading)
@@ -54,16 +75,39 @@ void draw()
   if (view == "annotate")
   {
       print(patientList.get(currentPatient).getActiveOrgan());
-     img = loadImage(patientList.get(currentPatient).getActiveOrgan());
-     image(img,width/2,height/2);
+//     img = loadImage(patientList.get(currentPatient).getActiveOrgan());
+//     image(img,width/2,height/2);
   }
 }
 void onRotate(float x, float y, float ang)
 {
-  print(ang);
+  if(view == "image")
+  {
+    print(ang);
+  }
+}
+//event listener for double tap
+void onDoubleTap(float x, float y)
+{
+  if(view=="image")
+  {
+     print("DT!"); 
+  }
 }
 void onPinch(float x, float y, float d)
 {
+  if(view=="image")
+  {  
+    if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
+    {
+      xr += (x - prevPinchX);
+      yr += (y - prevPinchY);
+    }
+    prevPinchX = x;
+    prevPinchY = y;
+    prevPinchFrame = frameCount;
+    println("Pinch " + x + " " + y + " " + d);
+  }
 //  wSize = constrain(wSize+d, 10, 2000);
 //  hSize = constrain(wSize+d, 10, 2000);
 //  if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
@@ -74,7 +118,6 @@ void onPinch(float x, float y, float d)
 //  prevPinchX = x;
 //  prevPinchY = y;
 //  prevPinchFrame = frameCount;
-  println("Pinch " + x + " " + y + " " + d);
 }
 
 //set active view
@@ -111,11 +154,6 @@ void widgetOverlay()
       clientsWidget.hide();
       imageViewer.show(); 
       annotateView.hide(); 
-      size(1080, 1776, P3D);
-      ortho();
-      box = new Boxxen();
-//      box.loadTriangles();////////////////////////////////////////////////////////
-      cap = new CutawayPlane(10, 0);
     }
     else if (view == "annotate")
     {
@@ -203,7 +241,6 @@ void fillPatientList(String json_Str)
     {
       JSONObject patient = patients.getJSONObject(i);
       String id = patient.getString("id");
-//      String filename = patient.getString("file_name");
       String patientname = patient.getString("name");
       JSONArray JSONorgans = patient.getJSONArray("organs");
       ArrayList<OrganData> organList = new ArrayList<OrganData>();
@@ -218,7 +255,7 @@ void fillPatientList(String json_Str)
     } 
 }
 
-//read patients from device
+//read JSON into memory from device
 void loadPatients()
 {
     File sketchDir = getFilesDir();
@@ -351,8 +388,23 @@ void onClickWidget(APWidget widget)
          view = "image";
          currentPatient = i;  
          imageViewer.addWidget(patientList.get(i).getRadioGroup());
+//         size(1080, 1776, P3D);
+//         ortho();
+  //      box.loadTriangles(patientList.get(currentPatient).getpName());////////////////////////////////////////////////////////
+//         cap = new CutawayPlane(10, 0);
+        box.update(patientList.get(i).getOrgan(0));
+        organSet = 0;
      }
   }
   widgetOverlay();
+}
+
+public boolean surfaceTouchEvent(MotionEvent event) {
+
+  //call to keep mouseX, mouseY, etc updated
+  super.surfaceTouchEvent(event);
+
+  //forward event to class for processing
+  return gesture.surfaceTouchEvent(event);
 }
 

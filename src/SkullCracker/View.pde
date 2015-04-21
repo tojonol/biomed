@@ -19,10 +19,8 @@ public class OrganData
  public void downloadImage()
  {
      String imageloc = urlprefix + filename;
-     print(imageloc);
      img = loadImage(imageloc);
      String objectfile =  "p"+id+filename;
-     print("save"+objectfile);
      img.save(objectfile);
  }
  public boolean isChecked()
@@ -37,6 +35,10 @@ public class OrganData
  {
      String objectfile = "p"+id+filename;
     return objectfile; 
+ }
+ public JSONArray getMesh()
+ {
+    return mesh; 
  }
 }
 
@@ -55,11 +57,8 @@ public class PatientData
      id = id_;
      name = name_;
      organs = organList;
-//     organs = new ArrayList<APRadioButton>();
      for (int i = 0; i < organList.size(); i++)
-     {
-//       APRadioButton radio = new APRadioButton(organList.get(i).getOrganName());
-//       organs.add(radio); 
+     { 
        radioGroup.addRadioButton(organList.get(i).getOrganButton());
      }
      organList.get(0).getOrganButton().setChecked(true);
@@ -92,15 +91,27 @@ public class PatientData
  {
     return name; 
  }
- public String getActiveOrgan()
+ public int getActiveOrgan()
  {
     for(int i = 0; i<organs.size(); i++)
     {
         if (organs.get(i).isChecked())
         {
-          return organs.get(i).getImagefile();
+          return i;
         }
     }
-    return null;
+    return 0;
+ }
+ public JSONArray getOrgan(int index)
+ {
+   if (index<organs.size())
+   {
+       return organs.get(index).getMesh();
+   }
+   else
+   {
+     print ("outof bounds!");
+     return null;
+   }
  }
 }

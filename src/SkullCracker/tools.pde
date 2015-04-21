@@ -1,11 +1,9 @@
 import apwidgets.*;
 
-Boxxen box;
-CutawayPlane cap;
 float yr = PI / 4;
 float xr = -0.5;
-APWidgetContainer widgetContainer; 
-APButton right, left, in, out;
+//APWidgetContainer widgetContainer; 
+//APButton right, left, in, out;
 
 int[][][] fromStrip(int[][] strip) {
   int[][][] triangles = new int[strip.length - 2][3][3];
@@ -149,13 +147,13 @@ class Boxxen {
   int[][][] triangles = {
     {
       {0, 0, 0},
-      {0, 100, 0},
-      {100, 0, 0},
+      {0, 500, 0},
+      {500, 0, 0},
     },
     {
-      {100, 100, 0},
-      {0, 100, 0},
-      {100, 0, 0},
+      {500, 100, 0},
+      {0, 500, 0},
+      {500, 0, 0},
     },
     {
       {0, 0, 100},
@@ -230,8 +228,22 @@ class Boxxen {
       this.drawPoly(cap.cutPoly(triangles[i]));
     }
   }
-  void loadTriangles(JSONArray ja) {
-    
+  public void update(JSONArray ja) {
+    JSONArray tripleCoord, triplePixel;
+    int [][][] temptri = new int[ja.size()][3][3];
+    for(int tri = 0; tri<ja.size(); tri++)
+    {
+        tripleCoord = ja.getJSONArray(tri);
+        for (int coord = 0; coord < tripleCoord.size(); coord++)
+        {
+          triplePixel = tripleCoord.getJSONArray(coord);   
+          for (int value = 0; value < triplePixel.size(); value++)
+          {
+            temptri[tri][coord][value] = triplePixel.getInt(value);
+          }
+        }
+    }
+    triangles = temptri;
   }
 }
 
