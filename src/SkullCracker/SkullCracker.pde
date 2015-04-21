@@ -26,10 +26,8 @@ void setup()
 {
   imageMode(CENTER);
   orientation(PORTRAIT);
-//  fetchJSON();
   loadPatients();
   initializeWidgets();
-  print(width + " " + height);
 }
 
 void draw() 
@@ -37,16 +35,16 @@ void draw()
   background(0);
   if (view == "image")
   {
-    textSize(100);
+    textSize(50);
 
-    pushMatrix();
-    translate(width/2, height/2);
-    rotateX(xr);
-    rotateY(yr);
-    box.draw(cap);
-    cap.draw();
-    popMatrix();
-    text(patientList.get(currentPatient).getpName(), 200, 150);
+//    pushMatrix();
+//    translate(width/2, height/2);
+//    rotateX(xr);
+//    rotateY(yr);
+//    box.draw(cap);
+//    cap.draw();
+//    popMatrix();
+    text(patientList.get(currentPatient).getpName(), 400, 150);
   }
   if (loading)
   {
@@ -55,10 +53,8 @@ void draw()
   }
   if (view == "annotate")
   {
-      
-//     String imageloc = urlprefix + patientList.get(currentPatient).getfilename();
-
-     img = loadImage(patientList.get(currentPatient).getfilename());
+      print(patientList.get(currentPatient).getActiveOrgan());
+     img = loadImage(patientList.get(currentPatient).getActiveOrgan());
      image(img,width/2,height/2);
   }
 }
@@ -141,7 +137,7 @@ void initializeWidgets()
     imageViewer = new APWidgetContainer(this); 
     annotateView = new APWidgetContainer(this); 
     
-    //draw widgets
+    //set up buttons
     update = new APButton(width/2, (height/2)-100 ,"Update");
     help = new APButton(width/2, (height/2)+100, "Help");
     viewpatients = new APButton(width/2, (height/2)-100 , "View Patients");
@@ -150,11 +146,11 @@ void initializeWidgets()
     back_cw = new APButton(0, 50, "back");
     back_iv = new APButton(0, 50, "back");
     back_av = new APButton(0, 50, "back");
-    annotate = new APButton(width-250, 50, "annotate");
+    annotate = new APButton(width-300, 50, "annotate");
     save = new APButton(width-250, 50, "save");
-    annotation = new APEditText(150, 50, (width*2/3)-50, 150 );  
+    annotation = new APEditText(50, 175, width-100, 150 );  
     addPatientWidgets();
-    
+  
     //initialize widgets on panel
     homeWidget.addWidget(viewpatients);
     homeWidget.addWidget(settings);
@@ -192,7 +188,7 @@ void fetchJSON()
     //download images
     for(PatientData patient : patientList)
     {
-       patient.downloadImg(); 
+       patient.downloadImgs(); 
     }
     loading = false;
 }
@@ -207,9 +203,17 @@ void fillPatientList(String json_Str)
     {
       JSONObject patient = patients.getJSONObject(i);
       String id = patient.getString("id");
-      String filename = patient.getString("file_name");
+//      String filename = patient.getString("file_name");
       String patientname = patient.getString("name");
-      PatientData pd = new PatientData(filename, id, patientname);
+      JSONArray JSONorgans = patient.getJSONArray("organs");
+      ArrayList<OrganData> organList = new ArrayList<OrganData>();
+      for(int j = 0; j< JSONorgans.size(); j++)
+      {
+          JSONObject organ = JSONorgans.getJSONObject(j);
+          OrganData organObject = new OrganData(id, organ.getString("organ_name"),organ.getString("file_name"), organ.getJSONArray("mesh"));
+          organList.add(organObject);
+      }
+      PatientData pd = new PatientData(id, patientname, organList);
       patientList.add(pd);
     } 
 }
@@ -283,9 +287,10 @@ void addPatientWidgets()
 {
     for(int i = 0; i < patientList.size(); i++)
     {
-      patientList.get(i).placeButton(i);
-      clientsWidget.addWidget(patientList.get(i).getButton());
+      patientList.get(i).placePatientButton(i);
+      clientsWidget.addWidget(patientList.get(i).getPatientButton());
     } 
+    
 }
 
 // remove patient widgets when resyncing
@@ -293,7 +298,7 @@ void removePatientWidgets()
 {
     for(int i = 0; i < patientList.size(); i++)
     {
-      clientsWidget.removeWidget(patientList.get(i).getButton());
+      clientsWidget.removeWidget(patientList.get(i).getPatientButton());
     } 
 }
 
@@ -321,6 +326,7 @@ void onClickWidget(APWidget widget)
   else if(widget == back_iv)
   {
     view = "patients";
+    imageViewer.removeWidget(patientList.get(currentPatient).getRadioGroup());
   }
   else if(widget == back_cw)
   {
@@ -340,10 +346,11 @@ void onClickWidget(APWidget widget)
   } 
   for (int i = 0; i < patientList.size(); i++)
   {
-     if (widget == patientList.get(i).getButton())
+     if (widget == patientList.get(i).getPatientButton())
      {
          view = "image";
-         currentPatient = i;
+         currentPatient = i;  
+         imageViewer.addWidget(patientList.get(i).getRadioGroup());
      }
   }
   widgetOverlay();
