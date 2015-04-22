@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <list>
+#include <array>
 #include <map>
 #include <set>
 
@@ -10,6 +11,7 @@
 
 typedef itk::QuadEdgeMesh<float, 3> MeshType;
 typedef MeshType::PointType PointType;
+typedef std::array<float, 3> PointArrType;
 typedef MeshType::PointIdentifier PointIdentifier;
 typedef MeshType::PointsContainer PointsContainer;
 typedef MeshType::PointsContainerPointer PointsContainerPointer;
@@ -18,9 +20,19 @@ typedef itk::MeshFileWriter<MeshType> WriterType;
 
 struct PointComp {
   bool operator()(const PointType& left, const PointType& right) const {
-    return left[0]+left[1]+left[2] < right[0]+right[1]+right[2];
+    if (left[0] > right[0]) return false;
+    else if (left[1] > right[1]) return false;
+    else if (left[2] > right[2]) return false;
+    else if (left[0] == right[0] && left[1] == right[1] && left[2] == right[2]) return false;
+    return true;
   }
 };
+
+struct Triangle {
+  PointType a, b, c;
+};
+
+typedef std::list<Triangle> TriangleList;
 
 PointType UnitSphereProjection(PointType p) {
   PointType ret;
@@ -32,7 +44,19 @@ PointType UnitSphereProjection(PointType p) {
 
   return ret;
 }
-  
+
+PointArrType p2arr(PointType p) {
+  PointArrType pa;
+  pa[0] = p[0]; pa[1] = p[1]; pa[2] = p[2]; 
+  return pa;
+}
+
+PointType arr2p(PointArrType pa) {
+  PointType p;
+  p[0] = pa[0]; p[1] = pa[1]; p[2] = pa[2]; 
+  return p;
+}
+
 PointType GetMidPoint(PointType p1, PointType p2) {
   PointType mid;
   mid[0] = (p1[0] + p2[0]) / 2.0;
@@ -40,6 +64,64 @@ PointType GetMidPoint(PointType p1, PointType p2) {
   mid[2] = (p1[2] + p2[2]) / 2.0;
 
   return UnitSphereProjection(mid);
+}
+
+MeshType::Pointer Meshulate(TriangleList tlist) {
+  MeshType::Pointer mesh = MeshType::New();
+
+  std::map<PointArrType, PointIdentifier> pcache;
+
+  PointsContainerPointer points = PointsContainer::New();
+  points->Reserve(tlist.size());
+  PointIdentifier k;
+  k = 0;
+
+  for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
+    Triangle tri = *it;
+    std::cout << k << '\n';
+
+    std::cout << tri.a[0] << ' ' << tri.a[1] << ' ' << tri.a[2] << '\n';
+    if (pcache.count(p2arr(tri.a)) == 0) {
+      points->SetElement(k, tri.a);
+      pcache.insert(std::pair<PointArrType, PointIdentifier>(p2arr(tri.a), k));
+      k++;
+
+    } else { std::cout << "CAUGHT!\n"; }
+    std::cout << '\n';
+
+    if (pcache.count(p2arr(tri.b)) == 0) {
+      points->SetElement(k, tri.b);
+      pcache.insert(std::pair<PointArrType, PointIdentifier>(p2arr(tri.b), k));
+      k++;
+    } else { std::cout << "CAUGHT!\n"; }
+
+
+    if (pcache.count(p2arr(tri.c)) == 0) {
+      points->SetElement(k, tri.c);
+      pcache.insert(std::pair<PointArrType, PointIdentifier>(p2arr(tri.c), k));
+      k++;
+    } else { std::cout << "CAUGHT!\n"; }
+  }
+
+  mesh->SetPoints(points);
+
+  for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
+    Triangle tri = *it;
+
+    std::cout << tri.a[0] << ' ' << tri.a[1] << ' ' << tri.a[2] << '\n';
+    std::cout << tri.b[0] << ' ' << tri.b[1] << ' ' << tri.b[2] << '\n';
+    std::cout << tri.c[0] << ' ' << tri.c[1] << ' ' << tri.c[2] << '\n';
+    std::cout << '\n';
+
+    PointIdentifier k1 = pcache.find(p2arr(tri.a))->second,
+      k2 = pcache.find(p2arr(tri.b))->second,
+      k3 = pcache.find(p2arr(tri.c))->second;
+
+    std::cout << "HERE! " << k1 << ' ' << k2 << ' ' << k3 << '\n';
+    mesh->AddFaceTriangle(k1, k2, k3);
+  }
+
+  return mesh;
 }
 
 MeshType::Pointer BetterIcoSphere(MeshType::Pointer mesh) {
@@ -191,76 +273,58 @@ int main(int argc, char* argv[]) {
   }
 
   const char * outputFileName = argv[1];
-  int refinement = 3;
-  float radius = 10.0;
-
-  MeshType::Pointer mesh = MeshType::New();
-
-  PointsContainerPointer points = PointsContainer::New();
-  points->Reserve(100);
+  int refinement = 1;
+  float radius = 1.0;
 
   float t = (1.0 + sqrt(5.0)) / 2.0;
 
   PointIdentifier k = 0;
-  PointType p;
+  PointType p0, p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11;
 
-  // oh no tricky post increment! SURELY NO ONE IS SMART ENOUGH TO UNDERSTAND
-  // THIS CODE, NO ONE IN THE WORLD!
-  p[0] = -1.0; p[1] = t; p[2] = 0.0;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
+  p0[0] = -1.0; p0[1] =    t; p0[2] =   0.0;
+  p1[0] =  1.0; p1[1] =    t; p1[2] =   0.0;
+  p2[0] = -1.0; p2[1] =   -t; p2[2] =   0.0;
+  p3[0] =  1.0; p3[1] =   -t; p3[2] =   0.0;
+  p4[0] =  0.0; p4[1] = -1.0; p4[2] =     t;
+  p5[0] =  0.0; p5[1] =  1.0; p5[2] =     t;
+  p6[0] =  0.0; p6[1] = -1.0; p6[2] =    -t;
+  p7[0] =  0.0; p7[1] =  1.0; p7[2] =    -t;
+  p8[0] =    t; p8[1] =  0.0; p8[2] =  -1.0;
+  p9[0] =    t; p9[1] =  0.0; p9[2] =   1.0;
+  p10[0] =  -t; p10[1] = 0.0; p10[2] = -1.0;
+  p11[0] =  -t; p11[1] = 0.0; p11[2] =  1.0;
 
-  // The joke here is that it's actually the shitty copy-on-pass semantics of
-  // c/c++ that make this code tricky, not the counting
-  p[0] = 1.0; p[1] = t; p[2] = 0.0;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
+  TriangleList tlist;
+  Triangle tri;
 
-  p[0] = -1.0; p[1] = -t; p[2] = 0.0;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
+  tri = ((struct Triangle) {p0, p11, p5}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p0, p5, p1}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p0, p1, p7}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p0, p7, p10}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p0, p10, p11}); tlist.push_back(tri);
 
-  p[0] = 1.0; p[1] = -t; p[2] = 0.0;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
+  tri = ((struct Triangle) {p1, p5, p9}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p5, p11, p4}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p11, p10, p2}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p10, p7, p6}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p7, p1, p8}); tlist.push_back(tri);
 
-  p[0] = 0.0; p[1] = -1.0; p[2] = t;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
+  tri = ((struct Triangle) {p3, p9, p4}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p3, p4, p2}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p3, p2, p6}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p3, p6, p8}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p3, p8, p9}); tlist.push_back(tri);
 
-  p[0] = 0.0; p[1] = 1.0; p[2] = t;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
+  tri = ((struct Triangle) {p4, p9, p5}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p2, p4, p11}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p6, p2, p10}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p8, p6, p7}); tlist.push_back(tri);
+  tri = ((struct Triangle) {p9, p8, p1}); tlist.push_back(tri);
 
-  p[0] = 0.0; p[1] = -1.0; p[2] = -t;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
 
-  p[0] = 0.0; p[1] = 1.0; p[2] = -t;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
-
-  p[0] = t; p[1] = 0.0; p[2] = -1.0;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
-
-  p[0] = t; p[1] = 0.0; p[2] = 1.0;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
-
-  p[0] = -t; p[1] = 0.0; p[2] = -1.0;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
-
-  p[0] = -t; p[1] = 0.0; p[2] = 1.0;
-  p = UnitSphereProjection(p);
-  points->SetElement(k++, p);
-
-  mesh->SetPoints(points);
-
-  MeshType::EdgeListType edges;
 
   // Collecting edges like an edgelord
+  /*
   edges.push_back(mesh->AddFaceTriangle(0, 11, 5));
   edges.push_back(mesh->AddFaceTriangle(0, 5, 1));
   edges.push_back(mesh->AddFaceTriangle(0, 1, 7));
@@ -284,16 +348,18 @@ int main(int argc, char* argv[]) {
   edges.push_back(mesh->AddFaceTriangle(6, 2, 10));
   edges.push_back(mesh->AddFaceTriangle(8, 6, 7));
   edges.push_back(mesh->AddFaceTriangle(9, 8, 1));
+  */
 
+  MeshType::Pointer mesh = Meshulate(tlist);
 
   WriterType::Pointer writer0 = WriterType::New();
   writer0->SetFileName("lol.obj");
   writer0->SetInput(mesh);
   writer0->Update();
 
-  printf("here1\n");
-  mesh = BetterIcoSphere(mesh);
-  printf("here5\n");
+  //printf("here1\n");
+  //mesh = BetterIcoSphere(mesh);
+  //printf("here5\n");
 
   WriterType::Pointer writer = WriterType::New();
   writer->SetFileName(outputFileName);
