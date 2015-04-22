@@ -44,7 +44,7 @@ public class OrganData
 
 public class PatientData
 {
-  private String filename, id, name;
+  private String id, name;
   PImage img;
   APButton button;
   APRadioGroup radioGroup;
@@ -66,7 +66,7 @@ public class PatientData
  public void placePatientButton(int offset)
 {
     String buttonlabel = id+ ": "+name;
-    button = new APButton(200, 200+(offset*200), buttonlabel); 
+    button = new APButton(200, 300+(offset*200), width-400, 200, buttonlabel); 
 }
  public APRadioGroup getRadioGroup()
  {

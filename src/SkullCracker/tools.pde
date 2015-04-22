@@ -1,4 +1,4 @@
-import apwidgets.*;
+//import apwidgets.*;
 
 float yr = PI / 4;
 float xr = -0.5;
@@ -40,7 +40,8 @@ class CutawayPlane {
   }
   
   void draw() {
-    fill(255, 0, 255, .3);
+//    fill(255, 0, 255, .3);
+    fill(153);
     noFill();
     pushMatrix();
     
@@ -147,13 +148,13 @@ class Boxxen {
   int[][][] triangles = {
     {
       {0, 0, 0},
-      {0, 500, 0},
-      {500, 0, 0},
+      {0, 100, 0},
+      {100, 0, 0},
     },
     {
-      {500, 100, 0},
-      {0, 500, 0},
-      {500, 0, 0},
+      {100, 100, 0},
+      {0, 100, 0},
+      {100, 0, 0},
     },
     {
       {0, 0, 100},
