@@ -34,6 +34,10 @@ struct Triangle {
 
 typedef std::list<Triangle> TriangleList;
 
+void PrintPoint(PointType p) {
+  std::cout << p[0] << ' ' << p[1] << ' ' << p[2] << '\n';
+}
+
 PointType UnitSphereProjection(PointType p) {
   PointType ret;
   float length = sqrt(p[0]*p[0] + p[1]*p[1] + p[2]*p[2]);
@@ -117,11 +121,43 @@ MeshType::Pointer Meshulate(TriangleList tlist) {
       k2 = pcache.find(p2arr(tri.b))->second,
       k3 = pcache.find(p2arr(tri.c))->second;
 
-    std::cout << "HERE! " << k1 << ' ' << k2 << ' ' << k3 << '\n';
     mesh->AddFaceTriangle(k1, k2, k3);
   }
 
   return mesh;
+}
+
+TriangleList BetterIcoSphere(TriangleList tlist) {
+  TriangleList better;
+
+  for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
+    Triangle tri = *it;
+    Triangle temp_tri;
+    PointType p1, p2, p3, p12, p13, p23;
+
+    p1 = tri.a;
+    p2 = tri.b;
+    p3 = tri.c;
+
+    p12 = GetMidPoint(p1, p2);
+    p13 = GetMidPoint(p1, p3);
+    p23 = GetMidPoint(p3, p2);
+
+
+    temp_tri.a = p1; temp_tri.b = p12; temp_tri.c = p13;
+    better.push_back(temp_tri);
+
+    temp_tri.a = p2; temp_tri.b = p23; temp_tri.c = p12;
+    better.push_back(temp_tri);
+
+    temp_tri.a = p12; temp_tri.b = p23; temp_tri.c = p13;
+    better.push_back(temp_tri);
+
+    temp_tri.a = p23; temp_tri.b = p3; temp_tri.c = p13;
+    better.push_back(temp_tri);
+  }
+
+  return better;
 }
 
 MeshType::Pointer BetterIcoSphere(MeshType::Pointer mesh) {
@@ -294,6 +330,19 @@ int main(int argc, char* argv[]) {
   p10[0] =  -t; p10[1] = 0.0; p10[2] = -1.0;
   p11[0] =  -t; p11[1] = 0.0; p11[2] =  1.0;
 
+  p0 = UnitSphereProjection(p0);
+  p1 = UnitSphereProjection(p1);
+  p2 = UnitSphereProjection(p2);
+  p3 = UnitSphereProjection(p3);
+  p4 = UnitSphereProjection(p4);
+  p5 = UnitSphereProjection(p5);
+  p6 = UnitSphereProjection(p6);
+  p7 = UnitSphereProjection(p7);
+  p8 = UnitSphereProjection(p8);
+  p9 = UnitSphereProjection(p9);
+  p10 = UnitSphereProjection(p10);
+  p11 = UnitSphereProjection(p11);
+
   TriangleList tlist;
   Triangle tri;
 
@@ -322,34 +371,6 @@ int main(int argc, char* argv[]) {
   tri = ((struct Triangle) {p9, p8, p1}); tlist.push_back(tri);
 
 
-
-  // Collecting edges like an edgelord
-  /*
-  edges.push_back(mesh->AddFaceTriangle(0, 11, 5));
-  edges.push_back(mesh->AddFaceTriangle(0, 5, 1));
-  edges.push_back(mesh->AddFaceTriangle(0, 1, 7));
-  edges.push_back(mesh->AddFaceTriangle(0, 7, 10));
-  edges.push_back(mesh->AddFaceTriangle(0, 10, 11));
-
-  edges.push_back(mesh->AddFaceTriangle(1, 5, 9));
-  edges.push_back(mesh->AddFaceTriangle(5, 11, 4));
-  edges.push_back(mesh->AddFaceTriangle(11, 10, 2));
-  edges.push_back(mesh->AddFaceTriangle(10, 7, 6));
-  edges.push_back(mesh->AddFaceTriangle(7, 1, 8));
-
-  edges.push_back(mesh->AddFaceTriangle(3, 9, 4));
-  edges.push_back(mesh->AddFaceTriangle(3, 4, 2));
-  edges.push_back(mesh->AddFaceTriangle(3, 2, 6));
-  edges.push_back(mesh->AddFaceTriangle(3, 6, 8));
-  edges.push_back(mesh->AddFaceTriangle(3, 8, 9));
-
-  edges.push_back(mesh->AddFaceTriangle(4, 9, 5));
-  edges.push_back(mesh->AddFaceTriangle(2, 4, 11));
-  edges.push_back(mesh->AddFaceTriangle(6, 2, 10));
-  edges.push_back(mesh->AddFaceTriangle(8, 6, 7));
-  edges.push_back(mesh->AddFaceTriangle(9, 8, 1));
-  */
-
   MeshType::Pointer mesh = Meshulate(tlist);
 
   WriterType::Pointer writer0 = WriterType::New();
@@ -357,9 +378,8 @@ int main(int argc, char* argv[]) {
   writer0->SetInput(mesh);
   writer0->Update();
 
-  //printf("here1\n");
-  //mesh = BetterIcoSphere(mesh);
-  //printf("here5\n");
+  tlist = BetterIcoSphere(tlist);
+  mesh = Meshulate(tlist);
 
   WriterType::Pointer writer = WriterType::New();
   writer->SetFileName(outputFileName);
