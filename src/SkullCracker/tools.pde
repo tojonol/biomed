@@ -1,11 +1,9 @@
-import apwidgets.*;
+//import apwidgets.*;
 
-Boxxen box;
-CutawayPlane cap;
 float yr = PI / 4;
 float xr = -0.5;
-APWidgetContainer widgetContainer; 
-APButton right, left, in, out;
+//APWidgetContainer widgetContainer; 
+//APButton right, left, in, out;
 
 int[][][] fromStrip(int[][] strip) {
   int[][][] triangles = new int[strip.length - 2][3][3];
@@ -42,7 +40,8 @@ class CutawayPlane {
   }
   
   void draw() {
-    fill(0, 0, 0, .3);
+//    fill(255, 0, 255, .3);
+    fill(153);
     noFill();
     pushMatrix();
     
@@ -209,6 +208,8 @@ class Boxxen {
     }
   };
   
+  
+  
   void drawPoly(int[][] poly) {
     if (poly.length == 0 || poly[0] == null) return;
     
@@ -228,73 +229,57 @@ class Boxxen {
       this.drawPoly(cap.cutPoly(triangles[i]));
     }
   }
+  public void update(JSONArray ja) {
+    JSONArray tripleCoord, triplePixel;
+    int [][][] temptri = new int[ja.size()][3][3];
+    for(int tri = 0; tri<ja.size(); tri++)
+    {
+        tripleCoord = ja.getJSONArray(tri);
+        for (int coord = 0; coord < tripleCoord.size(); coord++)
+        {
+          triplePixel = tripleCoord.getJSONArray(coord);   
+          for (int value = 0; value < triplePixel.size(); value++)
+          {
+            temptri[tri][coord][value] = triplePixel.getInt(value);
+          }
+        }
+    }
+    triangles = temptri;
+  }
 }
 
-void setup() {
-  orientation(LANDSCAPE);
-  size(800, 600, P3D);
-  ortho();
-  box = new Boxxen();
-  cap = new CutawayPlane(10, 0);
+//void setup() {
+//  orientation(LANDSCAPE);
+//  size(800, 600, P3D);
+//  ortho();
+//  box = new Boxxen();
+//  cap = new CutawayPlane(10, 0);
   //Set up container and widgets
-  widgetContainer = new APWidgetContainer(this); 
-  right = new APButton(0, 50, "Right");
-  left = new APButton(0, 200, "Left"); 
-  in = new APButton(0, 350, "In"); 
-  out = new APButton(0, 500, "Out"); 
-  widgetContainer.addWidget(right); 
-  widgetContainer.addWidget(left); 
-  widgetContainer.addWidget(in); 
-  widgetContainer.addWidget(out); 
-}
+//  widgetContainer = new APWidgetContainer(this); 
+//  right = new APButton(0, 50, "Right");
+//  left = new APButton(0, 200, "Left"); 
+//  in = new APButton(0, 350, "In"); 
+//  out = new APButton(0, 500, "Out"); 
+//  widgetContainer.addWidget(right); 
+//  widgetContainer.addWidget(left); 
+//  widgetContainer.addWidget(in); 
+//  widgetContainer.addWidget(out); 
+//}
 
-void draw() {
-  background(255, 0, 255);
-  
-  pushMatrix();
-  translate(width/2, height/2);
-  rotateX(xr);
-  rotateY(yr);
-  box.draw(cap);
-  cap.draw();
-  popMatrix();
-}
 
-void keyPressed() {
-  if (key == CODED) {
-    if (keyCode == RIGHT) yr += 0.1;
-    else if (keyCode == LEFT) yr -= 0.1;
-    else if (keyCode == UP) xr += 0.1;
-    else if (keyCode == DOWN) xr -= 0.1;
-  } else {
-    if (keyCode == 'X') { cap.setCutDim(0); }
-    else if (keyCode == 'Y') cap.setCutDim(1);
-    else if (keyCode == 'Z') cap.setCutDim(2);
-    else if (keyCode == 61) cap.location += 2;
-    else if (keyCode == 45) cap.location -= 2;
-  }
-}
 
-//onClickWidget is called when a widget is clicked/touched
-void onClickWidget(APWidget widget)
-{  
-  //if it was save that was clicked
-  if(widget == right)
-  { 
-    yr += 0.1;
-  }
-  //if it was cancel that was clicked
-  else if(widget == left)
-  { 
-    yr -= 0.1;
-  }
-  else if(widget == in)
-  {
-    cap.location += 2;
-  }
-  else if(widget == out)
-  {
-    cap.location -= 2;
-  }
-}
+//void keyPressed() {
+//  if (key == CODED) {
+//    if (keyCode == RIGHT) yr += 0.1;
+//    else if (keyCode == LEFT) yr -= 0.1;
+//    else if (keyCode == UP) xr += 0.1;
+//    else if (keyCode == DOWN) xr -= 0.1;
+//  } else {
+//    if (keyCode == 'X') { cap.setCutDim(0); }
+//    else if (keyCode == 'Y') cap.setCutDim(1);
+//    else if (keyCode == 'Z') cap.setCutDim(2);
+//    else if (keyCode == 61) cap.location += 2;
+//    else if (keyCode == 45) cap.location -= 2;
+//  }
+//}
 
