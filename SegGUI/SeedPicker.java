@@ -68,8 +68,14 @@ class SeedsViewer {
     this.mainFrame.add(leftContainer);
     this.mainFrame.add(rightContainer);
 
+    final Frame mframe = this.mainFrame;
+    this.mainFrame.addWindowListener(new WindowAdapter() {
+      public void windowClosing(WindowEvent we) {
+        mframe.dispose();
+      }
+    });
+
     this.mainFrame.setVisible(true);  
-    IJ.log("LOLLZ");
   }
 
   public static SeedsViewer getInstance() {
@@ -93,7 +99,9 @@ public class SeedPicker extends PlugInTool {
 
     IJ.log("click: " + point.toString());
 
-    SeedsViewer.getInstance();
+    SeedsViewer viewer = SeedsViewer.getInstance();
+    viewer.mainFrame.setVisible(true);
+
 	}
 
 	public void showOptionsDialog() {
