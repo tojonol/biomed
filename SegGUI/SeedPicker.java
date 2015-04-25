@@ -34,9 +34,23 @@ class AddRegionListener implements ActionListener {
   }
 }
 
+class RegionSelectionChangeListener implements ItemListener {
+  SeedsViewer viewer;
+
+  RegionSelectionChangeListener(SeedsViewer viewer) {
+    this.viewer = viewer; 
+  }
+
+  public void itemStateChanged(ItemEvent e) {
+    viewer.regionSelectionChanged();
+  }
+}
+
 class SeedsViewer {
   private static SeedsViewer instance;
   static int regionNo;
+
+  public boolean reachable;
 
   Frame mainFrame;
   java.awt.List regionList;
@@ -58,6 +72,8 @@ class SeedsViewer {
     this.regionList = new java.awt.List(1);
     this.pointsList = new java.awt.List(1);
 
+    this.regionList.addItemListener(new RegionSelectionChangeListener(this));
+
     Button addRegionButton = new Button("New Region");
     addRegionButton.addActionListener(new AddRegionListener(this));
 
@@ -72,10 +88,12 @@ class SeedsViewer {
     this.mainFrame.addWindowListener(new WindowAdapter() {
       public void windowClosing(WindowEvent we) {
         mframe.dispose();
+        SeedsViewer.getInstance().reachable = false;
       }
     });
 
-    this.mainFrame.setVisible(true);  
+    this.mainFrame.setVisible(true);
+    this.reachable = true;
   }
 
   public static SeedsViewer getInstance() {
@@ -85,10 +103,28 @@ class SeedsViewer {
     return instance;
   }
 
+  public void regionSelectionChanged() {
+    this.pointsList.removeAll();
+
+    String activeRegion = this.regionList.getSelectedItem();
+    for (Point p : this.regionSeeds.get(activeRegion)) {
+      this.pointsList.add(p.toString());
+    }
+  }
+
   public void addRegion() {
     String name = "Region-" + regionNo++;
     this.regionSeeds.put(name, new ArrayList<Point>());
     this.regionList.add(name);
+  }
+
+
+  public void addPoint(Point point) {
+    String activeRegion = this.regionList.getSelectedItem();
+    ArrayList<Point> activeRegionSeeds = this.regionSeeds.get(activeRegion);
+
+    activeRegionSeeds.add(point);
+    this.pointsList.add(point.toString());
   }
 }
 
@@ -97,11 +133,12 @@ public class SeedPicker extends PlugInTool {
 	public void mousePressed(ImagePlus imp, MouseEvent e) {
     Point point = new Point(e.getX(), e.getY(), imp.getCurrentSlice());
 
-    IJ.log("click: " + point.toString());
-
     SeedsViewer viewer = SeedsViewer.getInstance();
-    viewer.mainFrame.setVisible(true);
+    if (!viewer.reachable) {
+      viewer.mainFrame.setVisible(true);
+    }
 
+    viewer.addPoint(point);
 	}
 
 	public void showOptionsDialog() {
