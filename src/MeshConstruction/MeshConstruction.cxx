@@ -73,22 +73,29 @@ PointType GetMidPoint(PointType p1, PointType p2) {
 std::string JSONify(TriangleList tlist) {
   std::stringstream json;
 
-  json << "[";
+  json << "[\n";
 
   for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
     Triangle tri = *it;
-    json << "[";
+    json << " [\n";
 
-    json << "[";
-    json << ' ' << tri.a << ',';
-    json << ' ' << tri.b << ',';
-    json << ' ' << tri.c;
-    json << "],";
+    json << "  [";
+    json << (int)tri.a[0] << ", " << (int)tri.a[1] << ", " << (int)tri.a[2];
+    json << "],\n";
 
-    json << "],";
+    json << "  [";
+    json << (int)tri.b[0] << ", " << (int)tri.b[1] << ", " << (int)tri.b[2];
+    json << "],\n";
+
+    json << "  [";
+    json << (int)tri.c[0] << ", " << (int)tri.c[1] << ", " << (int)tri.c[2];
+    json << "],\n";
+
+
+    json << " ],\n";
   }
 
-  json << "]";
+  json << "]\n";
 
   return json.str();
 }
