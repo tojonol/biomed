@@ -70,6 +70,36 @@ PointType GetMidPoint(PointType p1, PointType p2) {
   return UnitSphereProjection(mid);
 }
 
+std::string JSONify(TriangleList tlist) {
+  std::stringstream json;
+
+  json << "[\n";
+
+  for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
+    Triangle tri = *it;
+    json << " [\n";
+
+    json << "  [";
+    json << (int)tri.a[0] << ", " << (int)tri.a[1] << ", " << (int)tri.a[2];
+    json << "],\n";
+
+    json << "  [";
+    json << (int)tri.b[0] << ", " << (int)tri.b[1] << ", " << (int)tri.b[2];
+    json << "],\n";
+
+    json << "  [";
+    json << (int)tri.c[0] << ", " << (int)tri.c[1] << ", " << (int)tri.c[2];
+    json << "],\n";
+
+
+    json << " ],\n";
+  }
+
+  json << "]\n";
+
+  return json.str();
+}
+
 MeshType::Pointer Meshulate(TriangleList tlist) {
   MeshType::Pointer mesh = MeshType::New();
 
@@ -152,7 +182,7 @@ TriangleList BetterIcoSphere(TriangleList tlist) {
   return better;
 }
 
-MeshType::Pointer BuildIcoSphere(int refinement, float radius) {
+TriangleList BuildIcoSphere(int refinement, float radius) {
   float t = (1.0 + sqrt(5.0)) / 2.0;
 
   PointIdentifier k = 0;
@@ -233,8 +263,7 @@ MeshType::Pointer BuildIcoSphere(int refinement, float radius) {
     it = tlist.insert(it, tri);
   }
 
-  MeshType::Pointer mesh = Meshulate(tlist);
-  return mesh;
+  return tlist;
 }
 
 int main(int argc, char* argv[]) {
@@ -250,7 +279,11 @@ int main(int argc, char* argv[]) {
   float radius = std::atof(argv[2]);
   const char * outputFileName = argv[3];
 
-  MeshType::Pointer mesh = BuildIcoSphere(refinement, radius);
+  TriangleList icosphere = BuildIcoSphere(refinement, radius);
+
+  std::cout << JSONify(icosphere);
+
+  MeshType::Pointer mesh = Meshulate(icosphere);
 
   WriterType::Pointer writer = WriterType::New();
   writer->SetFileName(outputFileName);
