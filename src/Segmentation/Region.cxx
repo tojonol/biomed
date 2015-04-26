@@ -3,12 +3,21 @@
 
 char Region::next_id = 1;
 
+
 DICOMImageP Region::Render(DICOMImageP original_image) {
+  return this->BaseRender(original_image, false);
+}
+
+DICOMImageP Region::RenderMask() {
+  return this->BaseRender(NULL, true);
+}
+
+DICOMImageP Region::BaseRender(DICOMImageP original_image, bool mask) {
   DICOMImageP new_image = DICOMImage::New();
-  DICOMImage::RegionType lpr = original_image->GetLargestPossibleRegion();
+  DICOMImage::RegionType lpr = this->usop->GetLargestPossibleRegion();
   new_image->SetRegions(lpr);
   new_image->Allocate();
-  new_image->FillBuffer(-1000);
+  new_image->FillBuffer(mask?0:-1000);
 
   int xm = lpr.GetSize(0),
     ym = lpr.GetSize(1),
@@ -18,7 +27,7 @@ DICOMImageP Region::Render(DICOMImageP original_image) {
       for (int z=0; z<zm; z++) {
         DICOMImage::IndexType idx = {x, y, z};
         if (this->IsMember(idx)) {
-          new_image->SetPixel(idx, original_image->GetPixel(idx));
+          new_image->SetPixel(idx, mask?1:original_image->GetPixel(idx));
         }
       }
     }

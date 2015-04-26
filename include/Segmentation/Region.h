@@ -22,9 +22,9 @@ class Region {
         IndexList seeds,
         DICOMImageP image,
         USOP usop);
-    DICOMImageP Render(
-        DICOMImageP original_image);
+    DICOMImageP Render(DICOMImageP original_image);
     DICOMImageP RenderShell();
+    DICOMImageP RenderMask();
     void AddPixel(
         DICOMImage::IndexType idx,
         DICOMImageP image);
@@ -34,6 +34,10 @@ class Region {
         bool update);
     bool IsMember(
         DICOMImage::IndexType idx);
+
+  private:
+    DICOMImageP BaseRender(DICOMImageP original_image, bool mask);
+    
 };
 
 typedef std::map<std::string, Region*> SegmentationResults;

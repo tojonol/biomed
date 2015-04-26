@@ -37,7 +37,7 @@ RegionSeeds SeededRegionGrower::ReadSeedFile(std::string path) {
     ss.write(buf, strlen(buf));
     ss >> region_name;
 
-    IndexList seed_points;
+    IndexList *seed_points = new IndexList();
 
     while (!ss.eof()) {
       DICOMImage::IndexType idx = {0, 0, 0};
@@ -45,10 +45,10 @@ RegionSeeds SeededRegionGrower::ReadSeedFile(std::string path) {
       ss >> idx[1];
       ss >> idx[2];
 
-      seed_points.push_front(idx);
+      seed_points->push_front(idx);
     }
 
-    seeds.insert(RegionSeeds::value_type(region_name, &seed_points));
+    seeds.insert(RegionSeeds::value_type(region_name, seed_points));
   }
 
   infile->close();
@@ -268,6 +268,8 @@ SegmentationResults SeededRegionGrower::Segment(
       }
     }
   }
+
+
 
   int i = 0,
     vox_count = lpr.GetSize(0) * lpr.GetSize(1) * lpr.GetSize(2);
