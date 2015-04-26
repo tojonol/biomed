@@ -1,6 +1,10 @@
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.File;
+
 import javax.swing.BoxLayout;
 
 import ij.*;
@@ -31,6 +35,18 @@ class AddRegionListener implements ActionListener {
 
   public void actionPerformed(ActionEvent e) {     
     this.viewer.addRegion();
+  }
+}
+
+class SaveSeedsListener implements ActionListener {
+  SeedsViewer viewer;
+
+  SaveSeedsListener(SeedsViewer viewer) {
+    this.viewer = viewer;
+  }
+
+  public void actionPerformed(ActionEvent e) {     
+    this.viewer.saveSeeds();
   }
 }
 
@@ -76,9 +92,15 @@ class SeedsViewer {
 
     Button addRegionButton = new Button("New Region");
     addRegionButton.addActionListener(new AddRegionListener(this));
+    addRegionButton.setPreferredSize(new Dimension(10, 10));
+
+    Button saveSeedsButton = new Button("Save Seeds");
+    saveSeedsButton.addActionListener(new SaveSeedsListener(this));
+    saveSeedsButton.setPreferredSize(new Dimension(10, 10));
 
     leftContainer.add(this.regionList);
     leftContainer.add(addRegionButton);
+    leftContainer.add(saveSeedsButton);
     rightContainer.add(this.pointsList);
 
     this.mainFrame.add(leftContainer);
@@ -110,6 +132,45 @@ class SeedsViewer {
     for (Point p : this.regionSeeds.get(activeRegion)) {
       this.pointsList.add(p.toString());
     }
+  }
+
+  public void saveSeeds() {
+    FileDialog dialog = new FileDialog(this.mainFrame, "Save", FileDialog.SAVE);
+    dialog.setMultipleMode(false);
+
+    dialog.show();
+    File saveFile = dialog.getFiles()[0];
+
+    String ss = serializeSeeds(this.regionSeeds);
+
+    FileWriter fw;
+    try {
+      fw = new FileWriter(saveFile);
+      //IJ.log(saveFile);
+      fw.write(ss, 0, ss.length());
+      fw.close();
+    } catch (IOException e) {
+      IJ.log("Failed to open file for saving.");
+    }
+  }
+
+  public static String serializeSeeds(HashMap<String, ArrayList<Point>> seeds) {
+    String s = "";
+
+    for (String name : seeds.keySet()) {
+      ArrayList<Point> points = seeds.get(name);
+      s += name + " ";
+
+      for (Point p : points) {
+        s += p.x + " " + p.y + " " + p.slice + " ";
+      }
+
+      s = s.substring(0, s.length()-1);
+      s += "\n";
+    }
+
+    s = s.substring(0, s.length()-1);
+    return s;
   }
 
   public void addRegion() {
