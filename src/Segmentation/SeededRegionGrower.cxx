@@ -146,7 +146,7 @@ void SeededRegionGrower::WriteImage(DICOMImageP image, std::string path) {
   int slices = image->GetLargestPossibleRegion().GetSize()[2];
   OutputNamesGeneratorType::Pointer outputNames =
     OutputNamesGeneratorType::New();
-  std::string seriesFormat = path + "/" + "IM%d.dcm";
+  std::string seriesFormat = path + "/" + "IM%03d.dcm";
   outputNames->SetSeriesFormat(seriesFormat.c_str());
   outputNames->SetIncrementIndex(1);
   outputNames->SetStartIndex(1);
@@ -314,6 +314,8 @@ SegmentationResults SeededRegionGrower::Segment(
       uso->SetPixel(*it, -1);
     }
   }
+
+  printf("Segmentation done!\n");
 
   // Hey, the SSL is empty. That must mean that every voxel has been assigned
   // to a region. Great, return results.

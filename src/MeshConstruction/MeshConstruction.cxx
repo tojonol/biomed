@@ -6,8 +6,10 @@
 
 #include "itkQuadEdgeMesh.h"
 #include "itkMeshFileWriter.h"
+#include "itkCropImageFilter.h"
 
 #include "DICOMImage.h"
+#include "SeededRegionGrower.h"
 
 typedef itk::QuadEdgeMesh<float, 3> MeshType;
 typedef MeshType::PointType PointType;
@@ -266,19 +268,68 @@ TriangleList BuildIcoSphere(int refinement, float radius) {
   return tlist;
 }
 
-int main(int argc, char* argv[]) {
-  if(argc != 4) {
-    std::cerr << "Usage: "<< std::endl;
-    std::cerr << argv[0];
-    std::cerr << "<Refinement> <Radius> <OutputFileName>";
-    std::cerr << std::endl;
-    return 1;
+DICOMImageP AutoCrop(DICOMImageP image) {
+  DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
+  int xm = lpr.GetSize(0),
+    ym = lpr.GetSize(1),
+    zm = lpr.GetSize(2);
+
+  int max_x = 0, max_y = 0, max_z = 0, min_x = xm, min_y = ym, min_z = zm;
+
+  for (int x=0; x<xm; x++) {
+    for (int y=0; y<ym; y++) {
+      for (int z=0; z<zm; z++) {
+        DICOMImage::IndexType idx = {x, y, z};
+        if (image->GetPixel(idx) == 1) {
+          if (x > max_x) max_x = x;
+          if (y > max_y) max_y = y;
+          if (z > max_z) max_z = z;
+
+          if (x < min_x) min_x = x;
+          if (y < min_y) min_y = y;
+          if (z < min_z) min_z = z;
+        }
+      }
+    }
   }
 
-  int refinement = std::atoi(argv[1]);
-  float radius = std::atof(argv[2]);
-  const char * outputFileName = argv[3];
+  int x_size = max_x - min_x,
+    y_size = max_y - min_y,
+    z_size = max_z - min_z;
 
+  DICOMImage::SizeType size = {x_size, y_size, z_size};
+  DICOMImage::IndexType corner = {min_x, min_y, min_z};
+  DICOMImage::RegionType cropped_lpr(corner, size);
+
+  typedef itk::ExtractImageFilter<DICOMImage, DICOMImage> FilterType;
+
+  FilterType::Pointer crop_filter = FilterType::New();
+  crop_filter->SetExtractionRegion(cropped_lpr);
+  crop_filter->SetInput(image);
+  crop_filter->Update();
+
+  DICOMImageP cropped_image = crop_filter->GetOutput();
+  cropped_image->DisconnectPipeline();
+  image->DisconnectPipeline();
+  return cropped_image;
+}
+
+int main(int argc, char* argv[]) {
+  DICOMImageP image = SeededRegionGrower::LoadImage(
+      "/Users/lanny/test_dir/Region-0");
+
+  DICOMImageP cropped_image = AutoCrop(image);
+
+  printf("here1\n");
+  SeededRegionGrower::WriteImage(image, "/Users/lanny/test_dir/wtf");
+  printf("here2\n");
+
+  SeededRegionGrower::WriteImage(cropped_image,
+      "/Users/lanny/test_dir/cropped");
+
+
+
+  /*
   TriangleList icosphere = BuildIcoSphere(refinement, radius);
 
   std::cout << JSONify(icosphere);
@@ -294,6 +345,7 @@ int main(int argc, char* argv[]) {
     std::cerr << "Error: " << error << std::endl;
     return 2;
   }
+  */
 
   return 0;
 }

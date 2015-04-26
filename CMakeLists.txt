@@ -7,7 +7,7 @@ include(${ITK_USE_FILE})
 
 include_directories("include/Segmentation")
 
-set(SEG_HEADERS include/Segmentation/DICOMImage.h include/Segmentation/Region.h)
+set(SEG_HEADERS include/Segmentation/DICOMImage.h include/Segmentation/Region.h include/Segmentation/SeededRegionGrower.h)
 
 add_library(SeededRegionGrower src/Segmentation/SeededRegionGrower.cxx src/Segmentation/Region.cxx src/Segmentation/RatedVox.cxx)
 
