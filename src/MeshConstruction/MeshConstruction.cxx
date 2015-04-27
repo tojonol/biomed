@@ -107,7 +107,7 @@ MeshType::Pointer Meshulate(TriangleList tlist) {
   std::map<PointArrType, PointIdentifier> pcache;
 
   PointsContainerPointer points = PointsContainer::New();
-  points->Reserve(tlist.size());
+  points->Reserve(tlist.size() * 3);
   PointIdentifier k;
   k = 0;
 
@@ -267,6 +267,15 @@ TriangleList BuildIcoSphere(int refinement, float radius) {
   return tlist;
 }
 
+float NecessaryRadius(DICOMImageP image) {
+  DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
+  int x = lpr.GetSize(0),
+    y = lpr.GetSize(1),
+    z = lpr.GetSize(2);
+
+  return sqrt((float)(x*x + y*y + z*z));
+}
+
 DICOMImageP AutoCrop(DICOMImageP image) {
   DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
   int xm = lpr.GetSize(0),
@@ -319,31 +328,121 @@ DICOMImageP AutoCrop(DICOMImageP image) {
   return cropped_image;
 }
 
+PointType PullUntilCollision(PointType p, DICOMImageP image) {
+  printf("sup\n");
+  DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
+
+  // We need to consider the image to be shifted such that it's center (or
+  // rather, the center of its bounding box) is on the origin.
+  int x_offset = lpr.GetSize(0) / 2,
+    y_offset = lpr.GetSize(1) / 2,
+    z_offset = lpr.GetSize(2) / 2;
+
+  float x = p[0], y = p[1], z = p[2],
+    sum = x + y + z,
+    x_delta = 0 - x / sum,
+    y_delta = 0 - y / sum,
+    z_delta = 0 - z / sum;
+
+  printf("blood\n");
+  bool was_inside = false;
+  while (true) {
+    DICOMImage::IndexType idx = {
+      (int)x + x_offset, (int)y + y_offset, (int)z + z_offset};
+
+    printf("%f %f %f\n", x, y, z);
+    printf("%ld %ld %ld\n", idx[0], idx[1], idx[2]);
+
+    if (lpr.IsInside(idx)) {
+      printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~we're in bitches\n");
+      was_inside = true;
+    } else if (was_inside == true) {
+      break;
+    }
+
+    printf("fooglords\n");
+
+    if (image->GetPixel(idx) == 1) {
+      break;
+    }
+
+    printf("spazzkaz\n");
+
+    x += x_delta;
+    y += y_delta;
+    z += z_delta;
+  }
+
+  printf("cuz\n");
+  PointType new_point;
+  new_point[0] = x; new_point[1] = y; new_point[2] = z;
+
+  return new_point;
+}
+
+TriangleList CollapseIcosphere(TriangleList icosphere, DICOMImageP image) {
+  TriangleList wrapped;
+  DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
+  std::map<PointArrType, PointType> pcache;
+
+  printf("hey\n");
+  for (TriangleList::iterator it=icosphere.begin(); it!=icosphere.end(); it++) {
+    printf("mexkeks\n");
+    Triangle tri = *it;
+
+    if (pcache.count(p2arr(tri.a)) == 0) {
+      PointType new_point = PullUntilCollision(tri.a, image);
+      pcache.insert(
+          std::pair<PointArrType, PointType>(p2arr(tri.a), new_point));
+    }
+
+    printf("there\n");
+    if (pcache.count(p2arr(tri.b)) == 0) {
+      PointType new_point = PullUntilCollision(tri.b, image);
+      pcache.insert(
+          std::pair<PointArrType, PointType>(p2arr(tri.b), new_point));
+    }
+
+    if (pcache.count(p2arr(tri.c)) == 0) {
+      PointType new_point = PullUntilCollision(tri.c, image);
+      pcache.insert(
+          std::pair<PointArrType, PointType>(p2arr(tri.c), new_point));
+    }
+
+    Triangle new_tri;
+    new_tri.a = pcache.find(p2arr(tri.a))->second,
+    new_tri.b = pcache.find(p2arr(tri.b))->second,
+    new_tri.c = pcache.find(p2arr(tri.c))->second,
+
+    printf("gurl\n");
+    wrapped.push_back(tri);
+    printf("wasabi\n");
+  }
+
+  return wrapped;
+}
+
 int main(int argc, char* argv[]) {
   DICOMImageP image = SeededRegionGrower::LoadImage(
       "/Users/lanny/test_dir/Region-0");
 
-  DICOMImageP cropped_image = AutoCrop(image);
+  image = AutoCrop(image);
 
-  SeededRegionGrower::WriteImage(cropped_image,
-      "/Users/lanny/test_dir/cropped");
-  /*
-  TriangleList icosphere = BuildIcoSphere(refinement, radius);
+  TriangleList icosphere = BuildIcoSphere(2, NecessaryRadius(image));
+  //TriangleList mesh_triangles = CollapseIcosphere(icosphere, image);
+  TriangleList mesh_triangles = icosphere;
 
-  std::cout << JSONify(icosphere);
-
-  MeshType::Pointer mesh = Meshulate(icosphere);
+  MeshType::Pointer mesh = Meshulate(mesh_triangles);
 
   WriterType::Pointer writer = WriterType::New();
-  writer->SetFileName(outputFileName);
+  writer->SetFileName("a.obj");
   writer->SetInput(mesh);
   try {
     writer->Update();
   } catch(itk::ExceptionObject & error) {
     std::cerr << "Error: " << error << std::endl;
-    return 2;
+    return 1;
   }
-  */
 
   return 0;
 }
