@@ -114,4 +114,16 @@ public class PatientData
      return null;
    }
  }
+ 
+ public PImage getActiveOrganImage()
+ {
+    for(int i = 0; i<organs.size(); i++)
+    {
+        if (organs.get(i).isChecked())
+        {
+          return loadImage(organs.get(i).getImagefile());
+        }
+    }
+    return null;
+ }
 }

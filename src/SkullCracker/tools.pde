@@ -1,7 +1,8 @@
 //import apwidgets.*;
 
 float yr = PI / 4;
-float xr = -0.5;
+//float xr = -0.5;
+float xr = PI /4;
 //APWidgetContainer widgetContainer; 
 //APButton right, left, in, out;
 
@@ -40,25 +41,42 @@ class CutawayPlane {
   }
   
   void draw() {
-//    fill(255, 0, 255, .3);
+//    fill(153);
+//    noFill();
+//    pushMatrix();
+//    
+//    if (this.cutDim == DIM_X) rotateY(HALF_PI);
+//    else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
+//    
+//    // This might look a little wonky but it works since we're rotated in the 
+//    // plane's direction, increasing z moves us "forwards" relative to our
+//    // current (not absolute) facing.
+//    translate(0, 0, this.location);
+//   
+//    
+//    scale(0.75);    
+//    rectMode(CENTER);
+//    rect(0, 0, width, height);
     fill(153);
-    noFill();
+//    noFill();
     pushMatrix();
-    
+    translate(0,0, this.location);
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
     else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
-    
-    // This might look a little wonky but it works since we're rotated in the 
-    // plane's direction, increasing z moves us "forwards" relative to our
-    // current (not absolute) facing.
-    translate(0, 0, this.location);
-   
-    
-    scale(0.75);    
-    rectMode(CENTER);
-    rect(0, 0, width, height);
-    
+
+    beginShape(QUADS);
+    texture(img);
+    vertex(0, 0,  0, 0);
+    vertex(100, 0,  100, 0);
+    vertex(100, 100,  100, 100);
+    vertex(0, 100,  0, 100);
+//    vertex(0,0);
+//    vertex(100,0);
+//    vertex(100,100);
+//    vertex(0,100);
+    endShape();
     popMatrix();
+//    popMatrix();
   }
   
   float distToPoint(int[] point) {
@@ -212,7 +230,7 @@ class Boxxen {
   
   void drawPoly(int[][] poly) {
     if (poly.length == 0 || poly[0] == null) return;
-    
+//    texture(img);
     beginShape();
     for (int i=0; i<poly.length; i++) {
       if (poly[i] == null) break;

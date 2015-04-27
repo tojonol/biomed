@@ -25,7 +25,7 @@ boolean loading = false;
 Boxxen box;
 CutawayPlane cap;
 KetaiGesture gesture;
-float prevPinchX = -1, prevPinchY = -1;
+float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY;
 int prevPinchFrame = -1;
 
 
@@ -39,8 +39,7 @@ void setup()
   initializeWidgets();
   size(1080, 1776, P3D);
   ortho();
-  cap = new CutawayPlane(10, 0);
-  
+  cap = new CutawayPlane(10, 0);  
   box = new Boxxen();
 }
 
@@ -49,35 +48,37 @@ void draw()
   background(0);
   if (view == "image")
   {
+    //Check radio button and set active organ
     if (patientList.get(currentPatient).getActiveOrgan() != organSet)
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
         box.update(patientList.get(currentPatient).getOrgan(organSet));
     }
-    else
-    {
-    }
+    
+    //Draw image information
     textSize(50);
-
     pushMatrix();
     translate(width/2, height/2);
     rotateX(xr);
     rotateY(yr);
+    scale(scaleRatio);
     box.draw(cap);
     cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
   }
+  
+  //If loading patient data, notify user
   if (loading)
   {
     textSize(100);
     text("Loading Patient Data...", width/2, height/2-200);
   }
+  
+  //If in annotate mode
   if (view == "annotate")
   {
-    
     textSize(50);
-
     pushMatrix();
     translate(width/2, height/2);
     rotateX(xr);
@@ -86,38 +87,47 @@ void draw()
     cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
-//      print(patientList.get(currentPatient).getActiveOrgan());
-//     img = loadImage(patientList.get(currentPatient).getActiveOrgan());
-//     image(img,width/2,height/2);
+    img = patientList.get(currentPatient).getActiveOrganImage();
+  }
+}
+
+void mouseDragged() 
+{
+  if(view == "image")
+  {
+    float rate = 0.01;
+    xr += (pmouseY-mouseY) * rate;
+    yr += (mouseX-pmouseX) * rate;
   }
 }
 void onRotate(float x, float y, float d)
 {
   if(view == "image")
   {
-    if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
-    {
-      if (x-prevPinchX>=0)
-      {
-         xr -= .01;        
-      }
-      else
-      {
-         xr += .01; 
-      }
-      if(y - prevPinchY>=0)
-      {
-        yr += .01;
-      }
-      else
-      {
-        yr -= .01;
-      }
-    }
-    prevPinchX = x;
-    prevPinchY = y;
-    prevPinchFrame = frameCount;
-    print(d);
+    //most recent
+//    if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
+//    {
+//      if (x-prevPinchX>=0)
+//      {
+//         xr -= .01;        
+//      }
+//      else
+//      {
+//         xr += .01; 
+//      }
+//      if(y - prevPinchY>=0)
+//      {
+//        yr += .01;
+//      }
+//      else
+//      {
+//        yr -= .01;
+//      }
+//    }
+//    prevPinchX = x;
+//    prevPinchY = y;
+//    prevPinchFrame = frameCount;
+//    print(d);
   }
 }
 //event listener for double tap
@@ -152,29 +162,17 @@ void onPinch(float x, float y, float d)
 {
   if(view=="image")
   {  
-//    if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
-//    {
-//      if (x-prevPinchX>=0)
-//      {
-//         xr -= .1;        
-//      }
-//      else
-//      {
-//         xr += .1; 
-//      }
-//      if(y - prevPinchY>=0)
-//      {
-//        yr += .1;
-//      }
-//      else
-//      {
-//        yr -= .1;
-//      }
-//    }
-//    prevPinchX = x;
-//    prevPinchY = y;
-//    prevPinchFrame = frameCount;
-//    println("Pinch " + x + " " + y + " " + d);
+    if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
+    {
+      if(d>0)
+        scaleRatio += .1;
+      else
+        scaleRatio -= .1;
+    }
+    prevPinchX = x;
+    prevPinchY = y;
+    prevPinchFrame = frameCount;
+    println("Pinch " + x + " " + y + " " + d);
   }
 //  wSize = constrain(wSize+d, 10, 2000);
 //  hSize = constrain(wSize+d, 10, 2000);
