@@ -1,34 +1,26 @@
 //Import necessary libraries
 import android.view.MotionEvent;
-//import android.content.res.AssetManager;
-//import android.media.SoundPool;
-//import android.media.AudioManager;
 import apwidgets.*;
-//import android.text.InputType;
-//import android.view.inputmethod.EditorInfo;
-//import android.view.inputmethod.InputMethodManager;
-//import android.content.Context;
 import ketai.ui.*;
 import java.io.*;
+
 JSONObject json;
 JSONArray patients;
-String urlprefix = "http://alaromana.com/images/";
 PImage img;
 APWidgetContainer homeWidget, settingsWidget, clientsWidget, imageViewer, annotateView, helpView;
 APButton update, help, viewpatients, settings, back_iv, back_cw, back_sw, back_av, back_settings, annotate, save;
 APButton cutOutObjectS, cutOutObjectL, cutInObjectS, cutInObjectL;
 APEditText annotation;
 ArrayList<PatientData> patientList = new ArrayList<PatientData>();
-int currentPatient, organSet, cutaxis;
-String view;
+int prevPinchFrame = -1, currentPatient, organSet, cutaxis;
+String urlprefix = "http://alaromana.com/images/", view, helpmsg = ">>>HELP!!!<<<";//\n\nWhen viewing images:\n\tdrag to rotate\n\tpinch to zoom\n\tuse buttons on bottom to slice object";
 boolean loading = false;
 Boxxen box;
 CutawayPlane cap;
 KetaiGesture gesture;
 float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY;
-int prevPinchFrame = -1;
 
-
+//general program setup
 void setup()
 {
   textAlign(CENTER);
@@ -43,9 +35,26 @@ void setup()
   box = new Boxxen();
 }
 
+//main draw method
 void draw() 
 {
   background(0);
+  //Help view
+  if(view == "help")
+  {
+     PFont f =  createFont("Arial",20,true);
+     textFont(f);         
+    int x = width/2-100;
+    for (int i = 0; i < helpmsg.length(); i++) 
+    {
+      textSize(random(12,80));
+      text(helpmsg.charAt(i),x,height/2);
+      // textWidth() spaces the characters out properly.
+      x += textWidth(helpmsg.charAt(i)); 
+    }
+  }
+  
+  //ImageViewer Mode
   if (view == "image")
   {
     //Check radio button and set active organ
@@ -53,8 +62,8 @@ void draw()
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
         box.update(patientList.get(currentPatient).getOrgan(organSet));
+        img = patientList.get(currentPatient).getActiveOrganImage();
     }
-    
     //Draw image information
     textSize(50);
     pushMatrix();
@@ -68,14 +77,14 @@ void draw()
     text(patientList.get(currentPatient).getpName(), width/2, 150);
   }
   
-  //If loading patient data, notify user
+  //Loading patient data, notify user
   if (loading)
   {
     textSize(100);
     text("Loading Patient Data...", width/2, height/2-200);
   }
   
-  //If in annotate mode
+  //Annotate mode
   if (view == "annotate")
   {
     textSize(50);
@@ -83,12 +92,13 @@ void draw()
     translate(width/2, height/2);
     rotateX(xr);
     rotateY(yr);
+    scale(scaleRatio);
     box.draw(cap);
     cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
-    img = patientList.get(currentPatient).getActiveOrganImage();
   }
+  widgetOverlay();
 }
 
 void mouseDragged() 
@@ -100,64 +110,24 @@ void mouseDragged()
     yr += (mouseX-pmouseX) * rate;
   }
 }
-void onRotate(float x, float y, float d)
-{
-  if(view == "image")
-  {
-    //most recent
-//    if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
-//    {
-//      if (x-prevPinchX>=0)
-//      {
-//         xr -= .01;        
-//      }
-//      else
-//      {
-//         xr += .01; 
-//      }
-//      if(y - prevPinchY>=0)
-//      {
-//        yr += .01;
-//      }
-//      else
-//      {
-//        yr -= .01;
-//      }
-//    }
-//    prevPinchX = x;
-//    prevPinchY = y;
-//    prevPinchFrame = frameCount;
-//    print(d);
-  }
-}
+
 //event listener for double tap
 void onDoubleTap(float x, float y)
 {
   if(view=="image")
   {
-     print("DT!"); 
      cutaxis += 1;
      cutaxis = cutaxis%3;
-     if(cutaxis == 0)cap.setCutDim(0); 
-     else if (cutaxis == 1) cap.setCutDim(1);
-     else if (cutaxis == 2) cap.setCutDim(2);
+     if(cutaxis == 0)
+       cap.setCutDim(0); 
+     else if (cutaxis == 1) 
+       cap.setCutDim(1);
+     else if (cutaxis == 2) 
+       cap.setCutDim(2);
   }
 }
-//event listener for flick
-void onFlick( float x, float y, float px, float py, float v)
-{
-  if(view =="image")
-  {
-//    if(x-px > 50)
-//    {
-//      cap.location -= 3;
-//    }
-//    else if (x-px < 50)
-//    {
-//      cap.location += 3;
-//    }
-  }
-}
+
+//event listener for pinch
 void onPinch(float x, float y, float d)
 {
   if(view=="image")
@@ -174,16 +144,6 @@ void onPinch(float x, float y, float d)
     prevPinchFrame = frameCount;
     println("Pinch " + x + " " + y + " " + d);
   }
-//  wSize = constrain(wSize+d, 10, 2000);
-//  hSize = constrain(wSize+d, 10, 2000);
-//  if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
-//  {
-//    translateX += (x - prevPinchX);
-//    translateY += (y - prevPinchY);
-//  }
-//  prevPinchX = x;
-//  prevPinchY = y;
-//  prevPinchFrame = frameCount;
 }
 
 //set active view
@@ -417,8 +377,7 @@ void addPatientWidgets()
     {
       patientList.get(i).placePatientButton(i);
       clientsWidget.addWidget(patientList.get(i).getPatientButton());
-    } 
-    
+    }     
 }
 
 // remove patient widgets when resyncing
@@ -495,13 +454,9 @@ void onClickWidget(APWidget widget)
   {
      if (widget == patientList.get(i).getPatientButton())
      {
-         view = "image";
-         currentPatient = i;  
-         imageViewer.addWidget(patientList.get(i).getRadioGroup());
-//         size(1080, 1776, P3D);
-//         ortho();
-  //      box.loadTriangles(patientList.get(currentPatient).getpName());////////////////////////////////////////////////////////
-//         cap = new CutawayPlane(10, 0);
+        currentPatient = i;  
+        view = "image";
+        imageViewer.addWidget(patientList.get(i).getRadioGroup());
         box.update(patientList.get(i).getOrgan(0));
         organSet = 0;
      }
@@ -509,8 +464,8 @@ void onClickWidget(APWidget widget)
   widgetOverlay();
 }
 
-public boolean surfaceTouchEvent(MotionEvent event) {
-
+public boolean surfaceTouchEvent(MotionEvent event) 
+{
   //call to keep mouseX, mouseY, etc updated
   super.surfaceTouchEvent(event);
 
