@@ -101,13 +101,36 @@ std::string JSONify(TriangleList tlist) {
   return json.str();
 }
 
+float max_in_tl(TriangleList tlist) {
+  float max = 0.0;
+
+  for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
+    Triangle tri = *it;
+
+    if (tri.a[0] > max) max = tri.a[0];
+    else if (tri.a[1] > max) max = tri.a[1];
+    else if (tri.a[2] > max) max = tri.a[2];
+    else if (tri.b[0] > max) max = tri.b[0];
+    else if (tri.b[1] > max) max = tri.b[1];
+    else if (tri.b[2] > max) max = tri.b[2];
+    else if (tri.c[0] > max) max = tri.c[0];
+    else if (tri.c[1] > max) max = tri.c[1];
+    else if (tri.c[2] > max) max = tri.c[2];
+
+  }
+
+  return max;
+}
+
 MeshType::Pointer Meshulate(TriangleList tlist) {
   MeshType::Pointer mesh = MeshType::New();
+
+  printf("m1: %f\n", max_in_tl(tlist));
 
   std::map<PointArrType, PointIdentifier> pcache;
 
   PointsContainerPointer points = PointsContainer::New();
-  points->Reserve(tlist.size() * 3);
+  points->Reserve(tlist.size());
   PointIdentifier k;
   k = 0;
 
@@ -118,7 +141,6 @@ MeshType::Pointer Meshulate(TriangleList tlist) {
       points->SetElement(k, tri.a);
       pcache.insert(std::pair<PointArrType, PointIdentifier>(p2arr(tri.a), k));
       k++;
-
     }
 
     if (pcache.count(p2arr(tri.b)) == 0) {
@@ -133,9 +155,38 @@ MeshType::Pointer Meshulate(TriangleList tlist) {
       pcache.insert(std::pair<PointArrType, PointIdentifier>(p2arr(tri.c), k));
       k++;
     }
+
+
   }
 
-  mesh->SetPoints(points);
+
+  for (PointsContainer::iterator it=points->begin(); it!=points->end(); it++) {
+    std::cout << it->second << '\n';
+  }
+
+  PointsContainerPointer real_points = PointsContainer::New();
+  real_points->Reserve(k);
+  int i=0;
+  for (PointsContainer::iterator it=points->begin(); it!=points->end(); it++) {
+    PointType p = it->second;
+    std::cout << p << '\n';
+    real_points->SetElement(i, p);
+    i++;
+    
+    if (i >= k) break;
+  }
+
+  mesh->SetPoints(real_points);
+
+
+  printf("kekekekek\n\n\n");
+  /*
+  for (PointsContainer::iterator it=real_points->begin(); it!=real_points->end(); it++) {
+    std::cout << it->second << '\n';
+  }
+  */
+  
+
 
   for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
     Triangle tri = *it;
@@ -143,6 +194,12 @@ MeshType::Pointer Meshulate(TriangleList tlist) {
     PointIdentifier k1 = pcache.find(p2arr(tri.a))->second,
       k2 = pcache.find(p2arr(tri.b))->second,
       k3 = pcache.find(p2arr(tri.c))->second;
+
+    /*
+    cout << pcache.find(p2arr(tri.a))->first << '\n';
+    cout << pcache.find(p2arr(tri.b))->first << '\n';
+    cout << pcache.find(p2arr(tri.c))->first << '\n';
+    */
 
     mesh->AddFaceTriangle(k1, k2, k3);
   }
@@ -329,7 +386,6 @@ DICOMImageP AutoCrop(DICOMImageP image) {
 }
 
 PointType PullUntilCollision(PointType p, DICOMImageP image) {
-  printf("sup\n");
   DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
 
   // We need to consider the image to be shifted such that it's center (or
@@ -339,44 +395,39 @@ PointType PullUntilCollision(PointType p, DICOMImageP image) {
     z_offset = lpr.GetSize(2) / 2;
 
   float x = p[0], y = p[1], z = p[2],
-    sum = x + y + z,
+    sum = std::abs(x) + std::abs(y) + std::abs(z),
     x_delta = 0 - x / sum,
     y_delta = 0 - y / sum,
     z_delta = 0 - z / sum;
 
-  printf("blood\n");
   bool was_inside = false;
   while (true) {
     DICOMImage::IndexType idx = {
       (int)x + x_offset, (int)y + y_offset, (int)z + z_offset};
 
-    printf("%f %f %f\n", x, y, z);
-    printf("%ld %ld %ld\n", idx[0], idx[1], idx[2]);
+    bool is_inside = lpr.IsInside(idx);
 
-    if (lpr.IsInside(idx)) {
-      printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~we're in bitches\n");
+    if (is_inside) {
       was_inside = true;
     } else if (was_inside == true) {
       break;
     }
 
-    printf("fooglords\n");
-
-    if (image->GetPixel(idx) == 1) {
+    if (is_inside && image->GetPixel(idx) == 1) {
       break;
     }
-
-    printf("spazzkaz\n");
 
     x += x_delta;
     y += y_delta;
     z += z_delta;
   }
 
-  printf("cuz\n");
   PointType new_point;
   new_point[0] = x; new_point[1] = y; new_point[2] = z;
 
+  printf("~~\n");
+  printf("old_point: %f %f %f\n", p[0], p[1], p[2]);
+  printf("new_point: %f %f %f\n", x, y, z);
   return new_point;
 }
 
@@ -385,9 +436,7 @@ TriangleList CollapseIcosphere(TriangleList icosphere, DICOMImageP image) {
   DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
   std::map<PointArrType, PointType> pcache;
 
-  printf("hey\n");
   for (TriangleList::iterator it=icosphere.begin(); it!=icosphere.end(); it++) {
-    printf("mexkeks\n");
     Triangle tri = *it;
 
     if (pcache.count(p2arr(tri.a)) == 0) {
@@ -396,7 +445,6 @@ TriangleList CollapseIcosphere(TriangleList icosphere, DICOMImageP image) {
           std::pair<PointArrType, PointType>(p2arr(tri.a), new_point));
     }
 
-    printf("there\n");
     if (pcache.count(p2arr(tri.b)) == 0) {
       PointType new_point = PullUntilCollision(tri.b, image);
       pcache.insert(
@@ -414,9 +462,7 @@ TriangleList CollapseIcosphere(TriangleList icosphere, DICOMImageP image) {
     new_tri.b = pcache.find(p2arr(tri.b))->second,
     new_tri.c = pcache.find(p2arr(tri.c))->second,
 
-    printf("gurl\n");
-    wrapped.push_back(tri);
-    printf("wasabi\n");
+    wrapped.push_back(new_tri);
   }
 
   return wrapped;
@@ -428,9 +474,8 @@ int main(int argc, char* argv[]) {
 
   image = AutoCrop(image);
 
-  TriangleList icosphere = BuildIcoSphere(2, NecessaryRadius(image));
-  //TriangleList mesh_triangles = CollapseIcosphere(icosphere, image);
-  TriangleList mesh_triangles = icosphere;
+  TriangleList icosphere = BuildIcoSphere(5, NecessaryRadius(image));
+  TriangleList mesh_triangles = CollapseIcosphere(icosphere, image);
 
   MeshType::Pointer mesh = Meshulate(mesh_triangles);
 
