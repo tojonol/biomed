@@ -146,7 +146,7 @@ void SeededRegionGrower::WriteImage(DICOMImageP image, std::string path) {
   int slices = image->GetLargestPossibleRegion().GetSize()[2];
   OutputNamesGeneratorType::Pointer outputNames =
     OutputNamesGeneratorType::New();
-  std::string seriesFormat = path + "/" + "IM%03d.dcm";
+  std::string seriesFormat = path + "/" + "%06d.dcm";
   outputNames->SetSeriesFormat(seriesFormat.c_str());
   outputNames->SetIncrementIndex(1);
   outputNames->SetStartIndex(1);

@@ -6,7 +6,6 @@
 
 #include "itkQuadEdgeMesh.h"
 #include "itkMeshFileWriter.h"
-#include "itkCropImageFilter.h"
 
 #include "DICOMImage.h"
 #include "SeededRegionGrower.h"
@@ -297,20 +296,26 @@ DICOMImageP AutoCrop(DICOMImageP image) {
     y_size = max_y - min_y,
     z_size = max_z - min_z;
 
+  DICOMImageP cropped_image = DICOMImage::New();
   DICOMImage::SizeType size = {x_size, y_size, z_size};
-  DICOMImage::IndexType corner = {min_x, min_y, min_z};
+  DICOMImage::IndexType corner = {0, 0, 0};
   DICOMImage::RegionType cropped_lpr(corner, size);
 
-  typedef itk::ExtractImageFilter<DICOMImage, DICOMImage> FilterType;
+  cropped_image->SetRegions(cropped_lpr);
+  cropped_image->Allocate();
+  cropped_image->FillBuffer(0);
 
-  FilterType::Pointer crop_filter = FilterType::New();
-  crop_filter->SetExtractionRegion(cropped_lpr);
-  crop_filter->SetInput(image);
-  crop_filter->Update();
+  for (int x=0; x<x_size; x++) {
+    for (int y=0; y<y_size; y++) {
+      for (int z=0; z<z_size; z++) {
+        DICOMImage::IndexType cropped_idx = {x, y, z};
+        DICOMImage::IndexType source_idx = {x + min_x, y + min_y, z + min_z};
 
-  DICOMImageP cropped_image = crop_filter->GetOutput();
-  cropped_image->DisconnectPipeline();
-  image->DisconnectPipeline();
+        cropped_image->SetPixel(cropped_idx, image->GetPixel(source_idx));
+      }
+    }
+  }
+
   return cropped_image;
 }
 
@@ -320,15 +325,8 @@ int main(int argc, char* argv[]) {
 
   DICOMImageP cropped_image = AutoCrop(image);
 
-  printf("here1\n");
-  SeededRegionGrower::WriteImage(image, "/Users/lanny/test_dir/wtf");
-  printf("here2\n");
-
   SeededRegionGrower::WriteImage(cropped_image,
       "/Users/lanny/test_dir/cropped");
-
-
-
   /*
   TriangleList icosphere = BuildIcoSphere(refinement, radius);
 
