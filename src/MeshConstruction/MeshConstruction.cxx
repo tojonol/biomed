@@ -125,8 +125,6 @@ float max_in_tl(TriangleList tlist) {
 MeshType::Pointer Meshulate(TriangleList tlist) {
   MeshType::Pointer mesh = MeshType::New();
 
-  printf("m1: %f\n", max_in_tl(tlist));
-
   std::map<PointArrType, PointIdentifier> pcache;
 
   PointsContainerPointer points = PointsContainer::New();
@@ -159,17 +157,11 @@ MeshType::Pointer Meshulate(TriangleList tlist) {
 
   }
 
-
-  for (PointsContainer::iterator it=points->begin(); it!=points->end(); it++) {
-    std::cout << it->second << '\n';
-  }
-
   PointsContainerPointer real_points = PointsContainer::New();
   real_points->Reserve(k);
   int i=0;
   for (PointsContainer::iterator it=points->begin(); it!=points->end(); it++) {
     PointType p = it->second;
-    std::cout << p << '\n';
     real_points->SetElement(i, p);
     i++;
     
@@ -179,14 +171,6 @@ MeshType::Pointer Meshulate(TriangleList tlist) {
   mesh->SetPoints(real_points);
 
 
-  printf("kekekekek\n\n\n");
-  /*
-  for (PointsContainer::iterator it=real_points->begin(); it!=real_points->end(); it++) {
-    std::cout << it->second << '\n';
-  }
-  */
-  
-
 
   for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
     Triangle tri = *it;
@@ -194,12 +178,6 @@ MeshType::Pointer Meshulate(TriangleList tlist) {
     PointIdentifier k1 = pcache.find(p2arr(tri.a))->second,
       k2 = pcache.find(p2arr(tri.b))->second,
       k3 = pcache.find(p2arr(tri.c))->second;
-
-    /*
-    cout << pcache.find(p2arr(tri.a))->first << '\n';
-    cout << pcache.find(p2arr(tri.b))->first << '\n';
-    cout << pcache.find(p2arr(tri.c))->first << '\n';
-    */
 
     mesh->AddFaceTriangle(k1, k2, k3);
   }
@@ -425,9 +403,6 @@ PointType PullUntilCollision(PointType p, DICOMImageP image) {
   PointType new_point;
   new_point[0] = x; new_point[1] = y; new_point[2] = z;
 
-  printf("~~\n");
-  printf("old_point: %f %f %f\n", p[0], p[1], p[2]);
-  printf("new_point: %f %f %f\n", x, y, z);
   return new_point;
 }
 
@@ -468,19 +443,72 @@ TriangleList CollapseIcosphere(TriangleList icosphere, DICOMImageP image) {
   return wrapped;
 }
 
+TriangleList CorrectForSpace(TriangleList triangles,
+    DICOMImage::SpacingType spacing) {
+  TriangleList corrected;
+
+  for (TriangleList::iterator it=triangles.begin();
+      it!=triangles.end(); it++) {
+    Triangle tri = *it;
+
+    Triangle new_tri;
+
+    new_tri.a[0] = tri.a[0] * spacing[0];
+    new_tri.a[1] = tri.a[1] * spacing[1];
+    new_tri.a[2] = tri.a[2] * spacing[2];
+
+    new_tri.b[0] = tri.b[0] * spacing[0];
+    new_tri.b[1] = tri.b[1] * spacing[1];
+    new_tri.b[2] = tri.b[2] * spacing[2];
+
+    new_tri.c[0] = tri.c[0] * spacing[0];
+    new_tri.c[1] = tri.c[1] * spacing[1];
+    new_tri.c[2] = tri.c[2] * spacing[2];
+
+    corrected.push_back(new_tri);
+  }
+
+  return corrected;
+}
+
+
+
 int main(int argc, char* argv[]) {
-  DICOMImageP image = SeededRegionGrower::LoadImage(
-      "/Users/lanny/test_dir/Region-0");
+  if (argc != 4 && argc != 3) {
+    printf("Usage: %s input_image refinement [output_file]\n", argv[0]);
+    return 1;
+  }
+
+  std::string input_path = argv[1];
+  int refinement = atoi(argv[2]);
+  std::string output_path;
+
+  if (argc == 3) {
+    output_path = "a.obj";
+  } else {
+    output_path = argv[3];
+  }
+
+  DICOMImageP image = SeededRegionGrower::LoadImage(input_path);
 
   image = AutoCrop(image);
 
-  TriangleList icosphere = BuildIcoSphere(5, NecessaryRadius(image));
+  TriangleList icosphere = BuildIcoSphere(refinement, NecessaryRadius(image));
   TriangleList mesh_triangles = CollapseIcosphere(icosphere, image);
+
+  DICOMImage::SpacingType spacing = image->GetSpacing();
+  //printf("z spacing: %f\n", spacing[2]);
+  // hardcode spacing info because segmentation shreds it
+  spacing[0] = 0.98;
+  spacing[1] = 0.98;
+  spacing[2] = 2.4;
+    
+  mesh_triangles = CorrectForSpace(mesh_triangles, spacing);
 
   MeshType::Pointer mesh = Meshulate(mesh_triangles);
 
   WriterType::Pointer writer = WriterType::New();
-  writer->SetFileName("a.obj");
+  writer->SetFileName(output_path);
   writer->SetInput(mesh);
   try {
     writer->Update();
