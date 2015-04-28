@@ -13,7 +13,7 @@ APButton cutOutObjectS, cutOutObjectL, cutInObjectS, cutInObjectL;
 APEditText annotation;
 ArrayList<PatientData> patientList = new ArrayList<PatientData>();
 int prevPinchFrame = -1, currentPatient, organSet, cutaxis;
-String urlprefix = "http://alaromana.com/images/", view, helpmsg = ">>>HELP!!!<<<";//\n\nWhen viewing images:\n\tdrag to rotate\n\tpinch to zoom\n\tuse buttons on bottom to slice object";
+String urlprefix = "http://alaromana.com/images/", view;
 boolean loading = false;
 Boxxen box;
 CutawayPlane cap;
@@ -40,19 +40,15 @@ void setup()
 void draw() 
 {
   background(0);
+  
   //Help view
   if(view == "help")
   {
+     String helpmsg = "\n\nWhen viewing images:\n\tDrag to rotate\n\tPinch to zoom\n\tUse arrow buttons to slice object\n\n";
      PFont f =  createFont("Arial",20,true);
      textFont(f);         
-    int x = width/2-100;
-    for (int i = 0; i < helpmsg.length(); i++) 
-    {
-      textSize(random(12,80));
-      text(helpmsg.charAt(i),x,height/2);
-      // textWidth() spaces the characters out properly.
-      x += textWidth(helpmsg.charAt(i)); 
-    }
+     textSize(60);
+     text(helpmsg,width/2,200);
   }
   
   //ImageViewer Mode
@@ -62,7 +58,7 @@ void draw()
     if (patientList.get(currentPatient).getActiveOrgan() != organSet)
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
-        box.update(patientList.get(currentPatient).getOrgan(organSet));
+        box.update(patientList.get(currentPatient).getOrganMesh(organSet));
         img = patientList.get(currentPatient).getActiveOrganImage();
     }
     //Draw image information
@@ -71,6 +67,7 @@ void draw()
     translate(width/2, height/2);
     rotateX(xr);
     rotateY(yr);
+    print("xr: "+ xr+ " yr: "+yr);
     scale(scaleRatio);
     box.draw(cap);
     cap.draw();
@@ -92,13 +89,15 @@ void draw()
     pushMatrix();
     translate(width/2, height/2);
     //adjust for facing camera
-    rotateX(xr);
-    rotateY(yr);
+    rotateX(0);
+    rotateY(PI);
     scale(scaleRatio);
     box.draw(cap);
     cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
+    text(currOrgan.getTagString(), width/2, height-200);
   }
   widgetOverlay();
 }
@@ -132,7 +131,7 @@ void onDoubleTap(float x, float y)
 //event listener for pinch
 void onPinch(float x, float y, float d)
 {
-  if(view=="image")
+  if(view=="image" || view=="annotate")
   {  
     if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
     {
@@ -223,14 +222,14 @@ void initializeWidgets()
     help = new APButton(200, (height/2)+100, width-400, 200, "Help");
     viewpatients = new APButton(200, (height/2)-100, width-400, 200, "View Patients");
     settings  = new APButton(200, (height/2)+100, width-400, 200, "Settings");
-    back_sw = new APButton(0, 50, "back");
-    back_cw = new APButton(0, 50, "back");
-    back_iv = new APButton(0, 50, "back");
-    back_av = new APButton(0, 50, "back");
-    back_settings = new APButton(0, 50, "back");
-    annotate = new APButton(width-300, 50, "annotate");
-    save = new APButton(width-250, 50, "save");
-    annotation = new APEditText(50, 175, width-100, 150 );  
+    back_sw = new APButton(50, 50, "back");
+    back_cw = new APButton(50, 50, "back");
+    back_iv = new APButton(50, 50, "back");
+    back_av = new APButton(50, 50, "back");
+    back_settings = new APButton(50, 50, "back");
+    annotate = new APButton(width-250, 50, "annotate");
+    save = new APButton(width-200, 50, "save");
+    annotation = new APEditText(50, 200, width-100, 150 );  
     cutOutObjectS = new APButton(300, height-200, 200, 150, "<");
     cutOutObjectL = new APButton(50, height-200, 200, 150, "<<<"); 
     cutInObjectL = new APButton(width - 250, height-200, 200, 150, ">>>");
@@ -410,7 +409,7 @@ void onClickWidget(APWidget widget)
   else if(widget == back_iv)
   {
     view = "patients";
-    imageViewer.removeWidget(patientList.get(currentPatient).getRadioGroup());
+    imageViewer.removeWidget(patientList.get(currentPatient).getOrganButtons());
   }
   else if(widget == back_cw)
   {
@@ -422,10 +421,14 @@ void onClickWidget(APWidget widget)
   }
   else if(widget == back_av)
   {
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
+    currOrgan.saveTags();
     view = "image";
   }
   else if(widget == annotate)
   {
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
+    currOrgan.loadTags();
     view = "annotate";
   } 
   else if(widget == help)
@@ -458,8 +461,9 @@ void onClickWidget(APWidget widget)
   }
   else if(widget == save)
   {
-    print("save");
-//    patientList.get(currentPatient).getOrgan(organSet).addTag(annotation.getText()); 
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
+    currOrgan.addTag(annotation.getText());
+    annotation.setText("");
   }
   for (int i = 0; i < patientList.size(); i++)
   {
@@ -467,9 +471,10 @@ void onClickWidget(APWidget widget)
      {
         currentPatient = i;  
         view = "image";
-        imageViewer.addWidget(patientList.get(i).getRadioGroup());
-        box.update(patientList.get(i).getOrgan(0));
+        imageViewer.addWidget(patientList.get(i).getOrganButtons());
+        box.update(patientList.get(i).getOrganMesh(0));
         organSet = 0;
+        img = patientList.get(currentPatient).getActiveOrganImage();
      }
   }
   widgetOverlay();
