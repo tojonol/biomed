@@ -63,7 +63,7 @@ public class PatientData
   
    public PatientData(String id_, String name_, ArrayList<OrganData> organList)
   {
-     radioGroup = new APRadioGroup(width-300, 200);
+     radioGroup = new APRadioGroup(width-400, 200);
      radioGroup.setOrientation(APRadioGroup.VERTICAL);
      id = id_;
      name = name_;

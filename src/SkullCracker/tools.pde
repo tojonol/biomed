@@ -40,39 +40,67 @@ class CutawayPlane
     this.cutDim = cutDim;
   }
   
+  public void cut(int change)
+  {
+    if(change>0 && location+change<= maxMesh+1)
+    {
+      if(change>0 && location<minMesh-1)
+      {
+         location = round(minMesh-1);
+      }
+      else
+      {
+        location = location+change;
+      }
+    }
+    if(change<0 && location-change>= minMesh-1)
+    {
+      if(change<0 && location>maxMesh+1)
+      {
+         location = round(maxMesh+1); 
+      }
+      else
+      {
+        location = location+change;
+      }
+    }  
+  }
+  
   void draw() 
   {
-//    fill(153);
-//    noFill();
-//    pushMatrix();
-//    
-//    if (this.cutDim == DIM_X) rotateY(HALF_PI);
-//    else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
-//    
-//    // This might look a little wonky but it works since we're rotated in the 
-//    // plane's direction, increasing z moves us "forwards" relative to our
-//    // current (not absolute) facing.
-//    translate(0, 0, this.location);
-//   
-//    
-//    scale(0.75);    
-//    rectMode(CENTER);
-//    rect(0, 0, width, height);
     fill(153);
-//    noFill();
+    noFill();
     pushMatrix();
-    translate(0,0, this.location);
+    
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
     else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
-
-    beginShape(QUADS);
-    texture(img);
-    vertex(0, 0,  0, 0);
-    vertex(100, 0,  100, 0);
-    vertex(100, 100,  100, 100);
-    vertex(0, 100,  0, 100);
-    endShape();
+    
+    // This might look a little wonky but it works since we're rotated in the 
+    // plane's direction, increasing z moves us "forwards" relative to our
+    // current (not absolute) facing.
+    translate(0, 0, this.location);
+   
+    
+    scale(0.75);    
+    rectMode(CENTER);
+    rect(0, 0, width, height);
     popMatrix();
+
+    
+//    fill(153);
+//    pushMatrix();
+//    translate(0,0, this.location);
+//    if (this.cutDim == DIM_X) rotateY(HALF_PI);
+//    else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
+//
+//    beginShape(QUADS);
+//    texture(img);
+//    vertex(0, 0,  0, 0);
+//    vertex(100, 0,  100, 0);
+//    vertex(100, 100,  100, 100);
+//    vertex(0, 100,  0, 100);
+//    endShape();
+//    popMatrix();
   }
   
   float distToPoint(int[] point) 
@@ -171,70 +199,16 @@ class CutawayPlane
 
 class Boxxen 
 {
+  //give it something to draw before image loads into memory
   int[][][] triangles = {
     {
       {0, 0, 0},
       {0, 100, 0},
       {100, 0, 0},
-    },
-    {
-      {100, 100, 0},
-      {0, 100, 0},
-      {100, 0, 0},
-    },
-    {
-      {0, 0, 100},
-      {0, 100, 100},
-      {100, 0, 100},
-    },
-    {
-      {100, 100, 100},
-      {0, 100, 100},
-      {100, 0, 100},
-    },
-    {
-      {0, 0, 0},
-      {0, 0, 100},
-      {0, 100, 100}
-    },
-    {
-      {0, 0, 0},
-      {0, 100, 0},
-      {0, 100, 100}
-    },
-    {
-      {100, 0, 0},
-      {100, 0, 100},
-      {100, 100, 100}
-    },
-    {
-      {100, 0, 0},
-      {100, 100, 0},
-      {100, 100, 100}
-    },
-    {
-      {0, 100, 0},
-      {100, 100, 0},
-      {0, 100, 100}
-    },
-    {
-      {0, 100, 100},
-      {100, 100, 0},
-      {100, 100, 100}
-    },
-    {
-      {0, 0, 0},
-      {100, 0, 0},
-      {0, 0, 100}
-    },
-    {
-      {0, 0, 100},
-      {100, 0, 0},
-      {100, 0, 100}
-    }
-  };
+    }};
   
-  void drawPoly(int[][] poly) {
+  void drawPoly(int[][] poly) 
+  {
     if (poly.length == 0 || poly[0] == null) return;
     beginShape();
     for (int i=0; i<poly.length; i++) 
@@ -258,6 +232,8 @@ class Boxxen
   }
   public void update(JSONArray ja) 
   {
+    maxMesh = 0; 
+    minMesh = 0;
     JSONArray tripleCoord, triplePixel;
     int [][][] temptri = new int[ja.size()][3][3];
     for(int tri = 0; tri<ja.size(); tri++)
@@ -269,6 +245,10 @@ class Boxxen
           for (int value = 0; value < triplePixel.size(); value++)
           {
             temptri[tri][coord][value] = triplePixel.getInt(value);
+            if (minMesh>temptri[tri][coord][value])
+              minMesh = temptri[tri][coord][value];
+            if (maxMesh<temptri[tri][coord][value])
+              maxMesh = temptri[tri][coord][value];
           }
         }
     }

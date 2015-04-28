@@ -18,7 +18,7 @@ boolean loading = false;
 Boxxen box;
 CutawayPlane cap;
 KetaiGesture gesture;
-float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY;
+float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY, maxMesh, minMesh;
 
 //general program setup
 void setup()
@@ -183,7 +183,7 @@ void widgetOverlay()
       clientsWidget.hide();
       imageViewer.show(); 
       annotateView.hide(); 
-      helpView.hide(); 
+      helpView.hide();
     }
     else if (view == "annotate")
     {
@@ -261,7 +261,7 @@ void initializeWidgets()
 void fetchJSON()
 {
     loading = true;
-    String patientspath = urlprefix+"patients.txt";
+    String patientspath = urlprefix+"patientsI.txt";
     String[] homePage = null;
     homePage = loadStrings(patientspath);
 
@@ -432,19 +432,23 @@ void onClickWidget(APWidget widget)
   }
   else if(widget == cutOutObjectS)
   {
-    cap.location -= 1;
+//    cap.location -= 1;
+    cap.cut(-1);
   }
   else if(widget == cutOutObjectL)
   {
-    cap.location -= 5;
+//    cap.location -= 5;
+    cap.cut(-5);
   }
   else if(widget == cutInObjectS)
   {
-    cap.location += 1;
+//    cap.location += 1;
+    cap.cut(1);
   }
   else if(widget == cutInObjectL)
   {
-    cap.location += 5;
+//    cap.location += 5;
+    cap.cut(5);
   }
   else if(widget == back_settings)
   {
@@ -472,4 +476,5 @@ public boolean surfaceTouchEvent(MotionEvent event)
   //forward event to class for processing
   return gesture.surfaceTouchEvent(event);
 }
+
 
