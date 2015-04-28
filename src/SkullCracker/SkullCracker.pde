@@ -31,7 +31,8 @@ void setup()
   initializeWidgets();
   size(1080, 1776, P3D);
   ortho();
-  cap = new CutawayPlane(10, 0);  
+  cap = new CutawayPlane(10, 0);
+  cap.setCutDim(2);  
   box = new Boxxen();
 }
 
@@ -90,6 +91,7 @@ void draw()
     textSize(50);
     pushMatrix();
     translate(width/2, height/2);
+    //adjust for facing camera
     rotateX(xr);
     rotateY(yr);
     scale(scaleRatio);
@@ -114,17 +116,17 @@ void mouseDragged()
 //event listener for double tap
 void onDoubleTap(float x, float y)
 {
-  if(view=="image")
-  {
-     cutaxis += 1;
-     cutaxis = cutaxis%3;
-     if(cutaxis == 0)
-       cap.setCutDim(0); 
-     else if (cutaxis == 1) 
-       cap.setCutDim(1);
-     else if (cutaxis == 2) 
-       cap.setCutDim(2);
-  }
+//  if(view=="image")
+//  {
+//     cutaxis += 1;
+//     cutaxis = cutaxis%3;
+//     if(cutaxis == 0)
+//       cap.setCutDim(0); 
+//     else if (cutaxis == 1) 
+//       cap.setCutDim(1);
+//     else if (cutaxis == 2) 
+//       cap.setCutDim(2);
+//  }
 }
 
 //event listener for pinch
@@ -453,6 +455,11 @@ void onClickWidget(APWidget widget)
   else if(widget == back_settings)
   {
     view = "settings";
+  }
+  else if(widget == save)
+  {
+    print("save");
+//    patientList.get(currentPatient).getOrgan(organSet).addTag(annotation.getText()); 
   }
   for (int i = 0; i < patientList.size(); i++)
   {

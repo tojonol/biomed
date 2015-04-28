@@ -1,7 +1,8 @@
 //Organ Data Class
 public class OrganData
 {
-  String urlprefix = "http://alaromana.com/images/", organName, filename, id;
+  String urlprefix = "http://alaromana.com/images/", organName, filename, id, tagfile;
+  ArrayList<String> tags;
   JSONArray mesh;
   APRadioButton radio;
   public OrganData(String id_, String organ_name, String f_name, JSONArray omesh)
@@ -11,6 +12,7 @@ public class OrganData
     filename = f_name;
     mesh = omesh;
     radio = new APRadioButton(organName);
+    tagfile = "p"+id+filename.substring(0, filename.length()-4) + ".txt";
   } 
  
  //get the radio button for a given organ
@@ -50,6 +52,73 @@ public class OrganData
  {
     return mesh; 
  }
+ 
+ //load organ's tags from file
+ public void loadTags()
+ {
+    File sketchDir = getFilesDir();
+    tags = new ArrayList<String>();
+  
+    // read strings from file into tags
+    try 
+    {
+      print(tagfile);
+      FileReader input = new FileReader(sketchDir.getAbsolutePath() + "/" + tagfile);
+      BufferedReader bInput = new BufferedReader(input);
+      String ns = bInput.readLine();
+      while (ns != null) 
+      {
+        tags.add(ns);
+        ns = bInput.readLine();
+      }
+    }
+    catch (Exception e) 
+    {
+    }
+ }
+ 
+ //save organs tags to file
+  public void saveTags()
+  {
+    
+    File sketchDir = getFilesDir();
+    java.io.File outFile;
+    try 
+    {
+      outFile = new java.io.File(sketchDir.getAbsolutePath() + "/"+tagfile);
+      if (!outFile.exists())
+        outFile.createNewFile();
+      FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + "/"+tagfile);
+      for (int i=0; i<tags.size (); i++) 
+      {
+        outWriter.write(tags.get(i) + "\n");
+      }
+      outWriter.flush();
+      
+    }
+    catch (Exception e) 
+    {
+    }
+  }
+ 
+  
+  //get tag string
+  public String getTagString()
+  {
+    String tagString = "";
+    for (int i = 0; i< tags.size(); i++)
+    {
+       tagString = tagString + tags.get(i) + ", "; 
+    } 
+    if (tagString != "")
+      tagString = tagString.substring(0, tagString.length()-2);
+    return tagString;
+  }
+  
+  public void addTag(String tag)
+  {
+     tags.add(tag); 
+  }
 }
 
 //data for each patient
@@ -153,5 +222,10 @@ public class PatientData
           }
       }
       return null;
+   }
+   
+   public OrganData getOrganObject(int index)
+   {
+      return organs.get(index);
    }
 }
