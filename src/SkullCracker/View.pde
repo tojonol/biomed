@@ -3,16 +3,20 @@ public class OrganData
 {
   String urlprefix = "http://alaromana.com/images/", organName, filename, id, tagfile;
   ArrayList<String> tags;
+  ArrayList<String> filenames;
   JSONArray mesh;
   APRadioButton radio;
   public OrganData(String id_, String organ_name, String f_name, JSONArray omesh)
   {
     id = id_;
     organName = organ_name;
+//    filenames = f_names;
+//    filename = f_names.get(0);
     filename = f_name;
     mesh = omesh;
     radio = new APRadioButton(organName);
     tagfile = "p"+id+filename.substring(0, filename.length()-4) + ".txt";
+    loadTags();
   } 
  
  //get the radio button for a given organ
@@ -21,12 +25,21 @@ public class OrganData
     return radio; 
  }
  
- //download the corresponding organ's image
+ //toremove
  public void downloadImage()
  {
      String imageloc = urlprefix + filename;
      img = loadImage(imageloc);
      String objectfile =  "p"+id+filename;
+     img.save(objectfile);
+ }
+ 
+ //download the corresponding organ's image
+ public void downloadImage(String currentFile)
+ {
+     String imageloc = urlprefix + currentFile;
+     img = loadImage(imageloc);
+     String objectfile =  "p"+id+currentFile;
      img.save(objectfile);
  }
  
@@ -152,7 +165,7 @@ public class PatientData
    }
    
    //get the radio buttons for a patient
-   public APRadioGroup getRadioGroup()
+   public APRadioGroup getOrganButtons()
    {
       return radioGroup; 
    }
@@ -198,7 +211,7 @@ public class PatientData
    }
    
    //get the organs mesh
-   public JSONArray getOrgan(int index)
+   public JSONArray getOrganMesh(int index)
    {
      if (index<organs.size())
      {
@@ -224,7 +237,7 @@ public class PatientData
       return null;
    }
    
-   public OrganData getOrganObject(int index)
+   public OrganData getOrganData(int index)
    {
       return organs.get(index);
    }

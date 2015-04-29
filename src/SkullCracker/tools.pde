@@ -68,39 +68,39 @@ class CutawayPlane
   
   void draw() 
   {
-    fill(153);
-    noFill();
-    pushMatrix();
-    
-    if (this.cutDim == DIM_X) rotateY(HALF_PI);
-    else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
-    
-    // This might look a little wonky but it works since we're rotated in the 
-    // plane's direction, increasing z moves us "forwards" relative to our
-    // current (not absolute) facing.
-    translate(0, 0, this.location);
-   
-    
-    scale(0.75);    
-    rectMode(CENTER);
-    rect(0, 0, width, height);
-    popMatrix();
-
-    
 //    fill(153);
+//    noFill();
 //    pushMatrix();
-//    translate(0,0, this.location);
+//    
 //    if (this.cutDim == DIM_X) rotateY(HALF_PI);
 //    else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
-//
-//    beginShape(QUADS);
-//    texture(img);
-//    vertex(0, 0,  0, 0);
-//    vertex(100, 0,  100, 0);
-//    vertex(100, 100,  100, 100);
-//    vertex(0, 100,  0, 100);
-//    endShape();
+//    
+//    // This might look a little wonky but it works since we're rotated in the 
+//    // plane's direction, increasing z moves us "forwards" relative to our
+//    // current (not absolute) facing.
+//    translate(0, 0, this.location);
+//   
+//    
+//    scale(0.75);    
+//    rectMode(CENTER);
+//    rect(0, 0, width, height);
 //    popMatrix();
+
+    
+    fill(153);
+    pushMatrix();
+    translate(0,0, this.location);
+    if (this.cutDim == DIM_X) rotateY(HALF_PI);
+    else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
+
+    beginShape(QUADS);
+    texture(img);
+    vertex(0, 0,  0, 0);
+    vertex(100, 0,  100, 0);
+    vertex(100, 100,  100, 100);
+    vertex(0, 100,  0, 100);
+    endShape();
+    popMatrix();
   }
   
   float distToPoint(int[] point) 
