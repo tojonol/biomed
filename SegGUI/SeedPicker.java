@@ -192,7 +192,7 @@ class SeedsViewer {
 public class SeedPicker extends PlugInTool {
 
 	public void mousePressed(ImagePlus imp, MouseEvent e) {
-    Point point = new Point(e.getX(), e.getY(), imp.getCurrentSlice());
+    Point point = new Point(e.getX(), e.getY(), imp.getCurrentSlice()-1);
 
     SeedsViewer viewer = SeedsViewer.getInstance();
     if (!viewer.reachable) {
