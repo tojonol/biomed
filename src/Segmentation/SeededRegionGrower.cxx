@@ -27,13 +27,13 @@ RegionSeeds SeededRegionGrower::ReadSeedFile(std::string path) {
   /* A painfully fragile parser for our crappy ad-hoc region seed 
    * specification format. */
   RegionSeeds seeds;
-  char *buf = (char*)(malloc(16 * 1024));
+  char *buf = (char*)(malloc(32 * 1024));
   std::string region_name;
 
   std::ifstream *infile = new std::ifstream(path);
   while (!infile->eof()) {
     std::stringstream ss;
-    infile->getline(buf, 16 * 1024);
+    infile->getline(buf, 32 * 1024);
     ss.write(buf, strlen(buf));
     ss >> region_name;
 
@@ -304,7 +304,7 @@ SegmentationResults SeededRegionGrower::Segment(
   // them in the SSL (according to their delta values).
   while (!SSL.empty()) {
     if (!(i++ % 10000)) {
-      printf("%d%% complete\n", i * 100 / vox_count);
+      printf("%f%% complete\n", (float)(i * 100) / (float)vox_count);
     }
 
     // I know this is ugly but as far as I can tell it's just how STL is
