@@ -163,6 +163,27 @@ void SeededRegionGrower::WriteImage(DICOMImageP image, std::string path) {
   seriesWriter->Update();
 };
 
+void SeededRegionGrower::WriteImage(PNGStackP image, std::string path) {
+  int slices = image->GetLargestPossibleRegion().GetSize()[2];
+  OutputNamesGeneratorType::Pointer outputNames =
+    OutputNamesGeneratorType::New();
+  std::string seriesFormat = path + "/" + "%06d.png";
+  outputNames->SetSeriesFormat(seriesFormat.c_str());
+  outputNames->SetIncrementIndex(1);
+  outputNames->SetStartIndex(1);
+  outputNames->SetEndIndex(slices);
+ 
+  PNGSeriesWriterType::Pointer seriesWriter = PNGSeriesWriterType::New();
+
+  itk::PNGImageIO::Pointer PNGIO = itk::PNGImageIO::New();
+  PNGIO->SetPixelType(itk::ImageIOBase::RGBA);
+
+  seriesWriter->SetInput(image);
+  seriesWriter->SetImageIO(PNGIO);
+  seriesWriter->SetFileNames(outputNames->GetFileNames());
+  seriesWriter->Update();
+}
+
 Region *SeededRegionGrower::GetBestBorderingRegion(
     std::set<Region*> &regions,
     DICOMImage::IndexType idx,

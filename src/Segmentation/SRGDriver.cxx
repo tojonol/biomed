@@ -31,7 +31,13 @@ int main(int argc, char* argv[]) {
   for (SegmentationResults::iterator it=results.begin(); it!=results.end();
       it++) {
     DICOMImageP mask = it->second->RenderMask();
-    SeededRegionGrower::WriteImage(mask, end_dir + "/" + it->first);
+    DICOMImageP segment = it->second->Render(image);
+    PNGStackP pngs = it->second->RenderPNGStack(image);
+
+    SeededRegionGrower::WriteImage(mask, end_dir + "/" + it->first + "/mask");
+    SeededRegionGrower::WriteImage(pngs, end_dir + "/" + it->first + "/pngs");
+    SeededRegionGrower::WriteImage(segment,
+        end_dir + "/" + it->first + "/segment");
   }
 
   return 0;

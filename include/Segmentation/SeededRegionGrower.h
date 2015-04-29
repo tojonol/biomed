@@ -20,6 +20,9 @@ class SeededRegionGrower {
     static void WriteImage(
         DICOMImageP image,
         std::string path);
+    static void WriteImage(
+        PNGStackP image,
+        std::string path);
     static RegionSeeds ReadSeedFile(
         std::string path);
     static void WriteSeedFile(

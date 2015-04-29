@@ -3,7 +3,6 @@
 
 char Region::next_id = 1;
 
-
 DICOMImageP Region::Render(DICOMImageP original_image) {
   return this->BaseRender(original_image, false);
 }
@@ -68,6 +67,52 @@ DICOMImageP Region::RenderShell() {
               }
             }
           }
+        }
+      }
+    }
+  }
+
+  return new_image;
+}
+
+PNGStackP Region::RenderPNGStack(DICOMImageP original_image) {
+  PNGStackP new_image = PNGStack::New();
+  DICOMImage::RegionType lpr = this->usop->GetLargestPossibleRegion();
+
+  RGBAPixel transparent;
+
+  transparent.SetRed(255);
+  transparent.SetGreen(0);
+  transparent.SetBlue(0);
+  transparent.SetAlpha(0);
+
+  new_image->SetRegions(lpr);
+  new_image->Allocate();
+  new_image->FillBuffer(transparent);
+
+  int xm = lpr.GetSize(0),
+    ym = lpr.GetSize(1),
+    zm = lpr.GetSize(2);
+  for (int x=0; x<xm; x++) {
+    for (int y=0; y<ym; y++) {
+      for (int z=0; z<zm; z++) {
+        DICOMImage::IndexType idx = {x, y, z};
+        if (this->IsMember(idx)) {
+          DICOMImage::PixelType intensity = original_image->GetPixel(idx); 
+          RGBAPixel new_pixel;
+
+          int norm_intensity = ((int)intensity + 1024) / (2048 / 255);
+          char norm_intensityc;
+          if (norm_intensity > 255) norm_intensity = 255;
+          norm_intensityc = (char)norm_intensity;
+          //printf("%d %d\n", norm_intensity, norm_intensity);
+
+          new_pixel.SetAlpha(255);
+          new_pixel.SetRed(norm_intensityc);
+          new_pixel.SetGreen(norm_intensityc);
+          new_pixel.SetBlue(norm_intensityc);
+
+          new_image->SetPixel(idx, new_pixel);
         }
       }
     }
