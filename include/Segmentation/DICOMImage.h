@@ -12,6 +12,7 @@
 #include "itkGDCMImageIO.h"
 #include "itkGDCMSeriesFileNames.h"
 
+#include "itkRegularExpressionSeriesFileNames.h"
 #include "itkNumericSeriesFileNames.h"
 #include "itkImageSeriesReader.h"
 #include "itkImageSeriesWriter.h"

@@ -234,6 +234,28 @@ DICOMImageP SeededRegionGrower::LoadImage(std::string path) {
   return reader->GetOutput();
 }
 
+PNGStackP SeededRegionGrower::LoadPNGStack(std::string path) {
+  itk::PNGImageIO::Pointer PNGIO = itk::PNGImageIO::New();
+
+  itk::RegularExpressionSeriesFileNames::Pointer inputNames =
+    itk::RegularExpressionSeriesFileNames::New();
+  inputNames->SetRegularExpression("(.+).png");
+  inputNames->SetSubMatch(0);
+  inputNames->SetDirectory(path);
+
+  const ReaderType::FileNamesContainer & filenames =
+    inputNames->GetFileNames();
+ 
+  itk::ImageSeriesReader<PNGStack>::Pointer reader =
+    itk::ImageSeriesReader<PNGStack>::New();
+ 
+  reader->SetImageIO(PNGIO);
+  reader->SetFileNames(filenames);
+  reader->Update();
+
+  return reader->GetOutput();
+}
+
 SegmentationResults SeededRegionGrower::Segment(
     DICOMImageP image, RegionSeeds seeds) {
   /* Does all the magic of SRG segmentation. You can look at the typdef but 

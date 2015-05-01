@@ -19,3 +19,6 @@ target_link_libraries(MCMain SeededRegionGrower ${ITK_LIBRARIES})
 
 add_executable(MorphOpen src/MeshConstruction/MorphOpen.cxx)
 target_link_libraries(MorphOpen SeededRegionGrower ${ITK_LIBRARIES})
+
+add_executable(CropByMask src/MeshConstruction/CropByMask.cxx)
+target_link_libraries(CropByMask SeededRegionGrower ${ITK_LIBRARIES})

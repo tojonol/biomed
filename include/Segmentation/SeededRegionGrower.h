@@ -8,6 +8,8 @@ class SeededRegionGrower {
   public:
     static DICOMImageP LoadImage(
         std::string path);
+    static PNGStackP LoadPNGStack(
+        std::string path);
     static SegmentationResults Segment(
         DICOMImageP image,
         RegionSeeds seeds);
