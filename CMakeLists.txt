@@ -16,3 +16,6 @@ target_link_libraries(SRGMain SeededRegionGrower ${ITK_LIBRARIES})
 
 add_executable(MCMain src/MeshConstruction/MeshConstruction.cxx)
 target_link_libraries(MCMain SeededRegionGrower ${ITK_LIBRARIES})
+
+add_executable(MorphOpen src/MeshConstruction/MorphOpen.cxx)
+target_link_libraries(MorphOpen SeededRegionGrower ${ITK_LIBRARIES})
