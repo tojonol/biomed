@@ -17,7 +17,7 @@ JSONArray JSONOrgans;
 String[] patientid = { "0001230", "0005932", "1043300", "0005132"};
 String[] name = { "Jack Neilson", "Arnold Johnson", "Homer Shwartz", "Beth Constantine"} ; 
 String[] filename = { "front.jpg", "salad2.jpg", "mussels.jpg", "front.jpg"};
-String[] organs = {"lung","heart","stomache","golf bladder"};
+String[] organs = {"liver","heart","stomache","golf bladder"};
 int[][][] gblad = {
     {
       {-105, 170, 0},
@@ -1687,7 +1687,8 @@ JSONObject file = new JSONObject();
 patients = new JSONArray();
 
 //iterate through patients
-for (int i = 0; i < patientid.length; i++) 
+//for (int i = 0; i < patientid.length; i++) 
+for (int i = 0; i < 1; i++) 
 {
 
   patient = new JSONObject();
@@ -1701,7 +1702,6 @@ for (int i = 0; i < patientid.length; i++)
     triangleJSON = new JSONArray();
     if(organs[organCounter]=="golf bladder")
     {
-      print ("gblad");
       for(int tri = 0; tri<gblad.length; tri++)
       {
           tripleCoord = new JSONArray();
@@ -1732,7 +1732,12 @@ for (int i = 0; i < patientid.length; i++)
             //print("coord: "+coord);
             for (int value = 0; value < triangles[tri][coord].length; value++)
             {
-              triplePixel.setInt(value, (organCounter+1)*triangles[tri][coord][value]);
+              if(triangles[tri][coord][value] != 0)
+                triplePixel.setInt(value, 512);
+              else
+                triplePixel.setInt(value, 0);
+              
+              
             }
             tripleCoord.setJSONArray(coord, triplePixel);
           }
@@ -1740,8 +1745,32 @@ for (int i = 0; i < patientid.length; i++)
           triangleJSON.setJSONArray(tri, tripleCoord);
       }
     }
+    JSONArray files = new JSONArray();
+    for(int fi = 0; fi<440; fi++)
+    {
+      String currfile= "";
+      int shift = fi+1;
+      if(shift<10)
+         currfile = "00000"+shift+".png";
+      else if (shift<100)
+         currfile = "0000"+shift+".png";
+      else
+         currfile = "000"+shift+".png";
+       files.setString(fi, currfile);
+    }
+//    String path = "C:\\Users\\Jonathan Olson\\biomed\\src\\temp\\";
+//    File dir = new File (path+"input");
+//
+//    File organimgs = new File (path+"input\\"+list[i]+"\\"+organs[j]);
+//    String [] organImageArray = organimgs.list();
+//    for (int img = 0; img< organImageArray.length; img++)
+//    {
+//        organImages.setString(img,organImageArray[img]);
+//    }
+//    JSONOrgan.setJSONArray("files", organImages);
     JSONOrgan.setString("organ_name", organs[organCounter]);
     JSONOrgan.setString("file_name", filename[i]);
+    JSONOrgan.setJSONArray("files", files);
     JSONOrgan.setJSONArray("mesh", triangleJSON);
     JSONOrgans.setJSONObject(organCounter, JSONOrgan);
   }
@@ -1749,7 +1778,8 @@ for (int i = 0; i < patientid.length; i++)
   patient.setString("id", patientid[i]);
   patient.setJSONArray("organs", JSONOrgans);
   patients.setJSONObject(i, patient);
-}
+  }
+
 file.setString("other", "something useful to know about everyone");
 file.setJSONArray("patients",patients);
 String output = "data/patients.txt";

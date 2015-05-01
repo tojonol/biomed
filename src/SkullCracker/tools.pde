@@ -96,9 +96,9 @@ class CutawayPlane
     beginShape(QUADS);
     texture(img);
     vertex(0, 0,  0, 0);
-    vertex(100, 0,  100, 0);
-    vertex(100, 100,  100, 100);
-    vertex(0, 100,  0, 100);
+    vertex(512, 0,  512, 0);
+    vertex(512, 512,  512, 512);
+    vertex(0, 512,  0, 512);
     endShape();
     popMatrix();
   }

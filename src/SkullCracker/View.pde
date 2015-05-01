@@ -3,20 +3,26 @@ public class OrganData
 {
   String urlprefix = "http://alaromana.com/images/", organName, filename, id, tagfile;
   ArrayList<String> tags;
-  ArrayList<String> filenames;
+  ArrayList<String> imgList;
   JSONArray mesh;
   APRadioButton radio;
-  public OrganData(String id_, String organ_name, String f_name, JSONArray omesh)
+  public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files)
   {
+    imgList = new ArrayList<String>();
     id = id_;
     organName = organ_name;
 //    filenames = f_names;
 //    filename = f_names.get(0);
-    filename = f_name;
+//    filename = f_name;
     mesh = omesh;
     radio = new APRadioButton(organName);
-    tagfile = "p"+id+filename.substring(0, filename.length()-4) + ".txt";
+    tagfile = "p"+id+organName + ".txt";
     loadTags();
+    for(int i = 0; i<files.size();i++)
+    {
+      String curr = files.getString(i);
+      imgList.add(curr);
+    }
   } 
  
  //get the radio button for a given organ
@@ -25,22 +31,23 @@ public class OrganData
     return radio; 
  }
  
- //toremove
- public void downloadImage()
+ public void downloadAllImages()
  {
-     String imageloc = urlprefix + filename;
-     img = loadImage(imageloc);
-     String objectfile =  "p"+id+filename;
-     img.save(objectfile);
- }
- 
- //download the corresponding organ's image
- public void downloadImage(String currentFile)
- {
-     String imageloc = urlprefix + currentFile;
-     img = loadImage(imageloc);
-     String objectfile =  "p"+id+currentFile;
-     img.save(objectfile);
+   try
+   {
+      for (int i = 0; i< imgList.size();i++)
+      {
+         String imageloc = urlprefix+"patients/"+id+"/"+organName+"/"+imgList.get(i);
+         PImage currimg = loadImage(imageloc);
+         String objectfile =  "p"+id+organName +imgList.get(i);
+         print("Saving file: "+ objectfile);
+         currimg.save(objectfile);
+       }     
+   }
+   catch (Exception e) 
+   {
+      print("error dlin");
+   }
  }
  
  //check if the given organ is checked
@@ -54,9 +61,9 @@ public class OrganData
  }
  
  //get organ's file
- public String getImagefile()
+ public String getImagefile(int index)
  {
-     String objectfile = "p"+id+filename;
+     String objectfile = "p"+id+organName +imgList.get(index);
     return objectfile; 
  }
  
@@ -181,7 +188,7 @@ public class PatientData
    {
       for(int i = 0; i< organs.size();i++)
       {
-         organs.get(i).downloadImage(); 
+         organs.get(i).downloadAllImages(); 
       }
    }
    
@@ -225,13 +232,13 @@ public class PatientData
    }
    
    //return the active organs image
-   public PImage getActiveOrganImage()
+   public PImage getActiveOrganImage(int index)
    {
       for(int i = 0; i<organs.size(); i++)
       {
           if (organs.get(i).isChecked())
           {
-            return loadImage(organs.get(i).getImagefile());
+            return loadImage(organs.get(i).getImagefile(index));
           }
       }
       return null;
