@@ -1,8 +1,13 @@
 //
 // This example demonstrates how to read a series of dicom images
 // and how to scroll with the mousewheel or the up/down keys
-// through all slices
-//
+// through all slices.
+// Also this program records the seed points for User specified region.
+// While slicing through the images, whenever User presses the 'Right' down key, it prompts the User for
+// a region for which to record points. User should specify the region_name before clicking on the region, else 
+// whatever is clicked gets recorded for that region. Once the User specifies the region, Then as the User clicks
+// on the region, the  points get recorded in the file which is named "seedPoints.txt"
+
 // some standard vtk headers
 #include <vtkSmartPointer.h>
 #include <vtkObjectFactory.h>
@@ -20,6 +25,8 @@
 #include <vtkTextMapper.h>
 // needed to easily convert int to std::string
 #include <sstream>
+#include<iostream>
+#include<fstream>
  
  
 // helper class to format slice status message
@@ -39,7 +46,7 @@ class myVtkInteractorStyleImage : public vtkInteractorStyleImage {
     static myVtkInteractorStyleImage* New();
     vtkTypeMacro(myVtkInteractorStyleImage, vtkInteractorStyleImage);
     vtkSmartPointer<vtkImageViewer2> imageViewer;
- 
+	std::string fileStuff; // holds the region_nmae and seed points captured for that region. Gets written to File.
   protected:
     vtkImageViewer2* _ImageViewer;
     vtkTextMapper* _StatusMapper;
@@ -87,6 +94,8 @@ protected:
  
    virtual void OnKeyDown() {
       std::string key = this->GetInteractor()->GetKeySym();
+	  std::string region_name;
+	  int userInput = 0;
       if(key.compare("Up") == 0) {
          //cout << "Up arrow key was pressed." << endl;
          MoveSliceForward();
@@ -95,6 +104,22 @@ protected:
          //cout << "Down arrow key was pressed." << endl;
          MoveSliceBackward();
       }
+	  else if (key.compare("Right") == 0){
+		  /*prompts the User to begin recording points for a particular region*/
+
+		  printf("Would you like to record the seed points for new region ? Enter 1 for yes and 0 for no:\n");
+		  cin >> userInput;
+		  if (userInput == 1)
+		  {
+			  /*printf("Would you like to change the region ? Enter 1 for yes and 0 for no.");
+			  cin >> changeRegion;
+			  if (changeRegion = 1)*/
+			  printf("Please specify the region:\t");
+			  cin >> region_name;
+			  fileStuff += "\n"+region_name+" ";
+
+		  }
+	  }
       // forward event
       vtkInteractorStyleImage::OnKeyDown();
    }
@@ -123,15 +148,23 @@ protected:
     vtkRenderWindowInteractor *interactor =
       this->imageViewer->GetRenderWindow()->GetInteractor();
 
-
+	/*std::string strX;
+	std::string strY;
+	std::string strZ; */
+	
+	//int changeRegion = 0;
+	
     int x = interactor->GetEventPosition()[0],
       y = interactor->GetEventPosition()[1];
 
     printf("Click at: (%d, %d, %d)\n", x, y, this->_Slice);
+	/*converts numericals to string and then concatenate all to one string*/
+	fileStuff += std::to_string(x) + " " + std::to_string(y) + " " + std::to_string(this->_Slice) + " ";
    }
 };
  
 vtkStandardNewMacro(myVtkInteractorStyleImage);
+
  
  
 int main(int argc, char* argv[])
@@ -220,5 +253,15 @@ int main(int argc, char* argv[])
    imageViewer->GetRenderer()->ResetCamera();
    imageViewer->Render();
    renderWindowInteractor->Start();
+   /*output the string fileStuff, which has all the points alongside region_name to a file*/
+   ofstream myFile("seedPoints.txt");
+   if (myFile.is_open()){
+	  // myFile << region_name + " ";
+	   myFile << myInteractorStyle -> fileStuff;
+	   myFile.close();
+   }
+   else{
+	   cout << "Unable to open file";
+   }
    return EXIT_SUCCESS;
 }

@@ -12,7 +12,7 @@ APButton update, help, viewpatients, settings, back_iv, back_cw, back_sw, back_a
 APButton cutOutObjectS, cutOutObjectL, cutInObjectS, cutInObjectL;
 APEditText annotation;
 ArrayList<PatientData> patientList = new ArrayList<PatientData>();
-int prevPinchFrame = -1, currentPatient, organSet, cutaxis;
+int prevPinchFrame = -1, sliceIndex, currentPatient, organSet, cutaxis;
 String urlprefix = "http://alaromana.com/images/", view;
 boolean loading = false;
 Boxxen box;
@@ -34,6 +34,7 @@ void setup()
   cap = new CutawayPlane(10, 0);
   cap.setCutDim(2);  
   box = new Boxxen();
+  sliceIndex = 0;
 }
 
 //main draw method
@@ -59,7 +60,7 @@ void draw()
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
         box.update(patientList.get(currentPatient).getOrganMesh(organSet));
-        img = patientList.get(currentPatient).getActiveOrganImage();
+        img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
     }
     //Draw image information
     textSize(50);
@@ -262,7 +263,7 @@ void initializeWidgets()
 void fetchJSON()
 {
     loading = true;
-    String patientspath = urlprefix+"patientsI.txt";
+    String patientspath = urlprefix+"patients0.txt";
     String[] homePage = null;
     homePage = loadStrings(patientspath);
 
@@ -299,9 +300,11 @@ void fillPatientList(String json_Str)
       for(int j = 0; j< JSONorgans.size(); j++)
       {
           JSONObject organ = JSONorgans.getJSONObject(j);
-          OrganData organObject = new OrganData(id, organ.getString("organ_name"),organ.getString("file_name"), organ.getJSONArray("mesh"));
+       
+          OrganData organObject = new OrganData(id, organ.getString("organ_name"), organ.getJSONArray("mesh"), organ.getJSONArray("files"));
           organList.add(organObject);
       }
+      print("PD");
       PatientData pd = new PatientData(id, patientname, organList);
       patientList.add(pd);
     } 
@@ -428,6 +431,7 @@ void onClickWidget(APWidget widget)
   else if(widget == annotate)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
+    print("loadtags");
     currOrgan.loadTags();
     view = "annotate";
   } 
@@ -474,7 +478,7 @@ void onClickWidget(APWidget widget)
         imageViewer.addWidget(patientList.get(i).getOrganButtons());
         box.update(patientList.get(i).getOrganMesh(0));
         organSet = 0;
-        img = patientList.get(currentPatient).getActiveOrganImage();
+        img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
      }
   }
   widgetOverlay();
