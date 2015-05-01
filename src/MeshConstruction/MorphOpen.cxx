@@ -1,15 +1,15 @@
 #include <stdio.h>
 
 #include "itkBinaryBallStructuringElement.h"
-#include "itkFlatStructuringElement.h"
-#include "itkBinaryMorphologicalOpeningImageFilter.h"
 #include "itkBinaryErodeImageFilter.h"
+#include "itkBinaryDilateImageFilter.h"
 
 #include "DICOMImage.h"
 #include "SeededRegionGrower.h"
 
 typedef itk::BinaryBallStructuringElement<DICOMImage::PixelType, 3> SEType;
-typedef itk::BinaryErodeImageFilter <DICOMImage, DICOMImage, SEType> FilterType;
+typedef itk::BinaryErodeImageFilter <DICOMImage, DICOMImage, SEType> ErodeFilterType;
+typedef itk::BinaryDilateImageFilter <DICOMImage, DICOMImage, SEType> DilateFilterType;
 
 int main(int argc, char* argv[]) {
   if (argc != 4) {
@@ -24,15 +24,26 @@ int main(int argc, char* argv[]) {
   DICOMImageP image = SeededRegionGrower::LoadImage(input_path);
 
   SEType structuring_element;
-  structuring_element.SetRadius(5);
+  structuring_element.SetRadius(radius);
   structuring_element.CreateStructuringElement();
 
-  FilterType::Pointer filter = FilterType::New();
-  filter->SetInput(image);
-  filter->SetKernel(structuring_element);
-  filter->Update();
+  ErodeFilterType::Pointer efilter = ErodeFilterType::New();
+  efilter->SetErodeValue(1);
+  efilter->SetForegroundValue(1);
+  efilter->SetBackgroundValue(0);
+  efilter->SetInput(image);
+  efilter->SetKernel(structuring_element);
+  efilter->Update();
 
-  DICOMImageP new_image = filter->GetOutput();
+  DilateFilterType::Pointer dfilter = DilateFilterType::New();
+  dfilter->SetDilateValue(1);
+  dfilter->SetForegroundValue(1);
+  dfilter->SetBackgroundValue(0);
+  dfilter->SetInput(efilter->GetOutput());
+  dfilter->SetKernel(structuring_element);
+  dfilter->Update();
+
+  DICOMImageP new_image = dfilter->GetOutput();
 
   SeededRegionGrower::WriteImage(new_image, output_path);
 
