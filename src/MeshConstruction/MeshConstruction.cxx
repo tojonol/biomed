@@ -73,11 +73,19 @@ PointType GetMidPoint(PointType p1, PointType p2) {
 
 std::string JSONify(TriangleList tlist) {
   std::stringstream json;
+  bool first = true;
 
   json << "[\n";
 
   for (TriangleList::iterator it=tlist.begin(); it!=tlist.end(); it++) {
     Triangle tri = *it;
+
+    if (first) {
+      first = false;
+    } else {
+      json << ",\n";
+    }
+
     json << " [\n";
 
     json << "  [";
@@ -90,13 +98,13 @@ std::string JSONify(TriangleList tlist) {
 
     json << "  [";
     json << (int)tri.c[0] << ", " << (int)tri.c[1] << ", " << (int)tri.c[2];
-    json << "],\n";
+    json << "]\n";
 
 
-    json << " ],\n";
+    json << " ]\n";
   }
 
-  json << "]\n";
+  json << "]";
 
   return json.str();
 }
@@ -504,6 +512,17 @@ int main(int argc, char* argv[]) {
   spacing[2] = 2.4;
     
   mesh_triangles = CorrectForSpace(mesh_triangles, spacing);
+
+  // Spit the json out
+  DICOMImage::RegionType lpr = image->GetLargestPossibleRegion();
+  int x_offset = lpr.GetSize(0) / 2,
+    y_offset = lpr.GetSize(1) / 2,
+    z_offset = lpr.GetSize(2) / 2;
+
+  std::cout << "{\n";
+  std::cout << "\"offset\": [" << x_offset << ", " << y_offset << ", "
+    << z_offset << "],\n";
+  std::cout << "\"mesh\": " << JSONify(mesh_triangles) << "\n}";
 
   MeshType::Pointer mesh = Meshulate(mesh_triangles);
 
