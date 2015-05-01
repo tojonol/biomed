@@ -263,7 +263,7 @@ void initializeWidgets()
 void fetchJSON()
 {
     loading = true;
-    String patientspath = urlprefix+"patients0.txt";
+    String patientspath = urlprefix+"patients.txt";
     String[] homePage = null;
     homePage = loadStrings(patientspath);
 
@@ -304,7 +304,6 @@ void fillPatientList(String json_Str)
           OrganData organObject = new OrganData(id, organ.getString("organ_name"), organ.getJSONArray("mesh"), organ.getJSONArray("files"));
           organList.add(organObject);
       }
-      print("PD");
       PatientData pd = new PatientData(id, patientname, organList);
       patientList.add(pd);
     } 
