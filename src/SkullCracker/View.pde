@@ -63,7 +63,11 @@ public class OrganData
  //get organ's file
  public String getImagefile(int index)
  {
-     String objectfile = "p"+id+organName +imgList.get(index);
+    if (index>=imgList.size())
+      index = imgList.size()-1;
+    else if (index < 0)
+      index = 0;
+    String objectfile = "p"+id+organName +imgList.get(index);
     return objectfile; 
  }
  
@@ -238,6 +242,7 @@ public class PatientData
       {
           if (organs.get(i).isChecked())
           {
+            
             return loadImage(organs.get(i).getImagefile(index));
           }
       }
