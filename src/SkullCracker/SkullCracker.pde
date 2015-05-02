@@ -60,7 +60,7 @@ void draw()
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
         box.update(patientList.get(currentPatient).getOrganMesh(organSet));
-        img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
+//        img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
     }
     //Draw image information
     textSize(50);
@@ -68,12 +68,13 @@ void draw()
     translate(width/2, height/2);
     rotateX(xr);
     rotateY(yr);
-    print("xr: "+ xr+ " yr: "+yr);
     scale(scaleRatio);
     box.draw(cap);
     cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
+    img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
+    print("slice index: "+sliceIndex+" other: "+cap.location);
   }
   
   //Loading patient data, notify user
@@ -442,21 +443,25 @@ void onClickWidget(APWidget widget)
   {
 //    cap.location -= 1;
     cap.cut(-1);
+    sliceIndex = cap.location;
   }
   else if(widget == cutOutObjectL)
   {
 //    cap.location -= 5;
     cap.cut(-5);
+    sliceIndex = cap.location;
   }
   else if(widget == cutInObjectS)
   {
 //    cap.location += 1;
     cap.cut(1);
+    sliceIndex = cap.location;
   }
   else if(widget == cutInObjectL)
   {
 //    cap.location += 5;
     cap.cut(5);
+    sliceIndex = cap.location;
   }
   else if(widget == back_settings)
   {
