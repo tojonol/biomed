@@ -35,6 +35,8 @@ void setup()
   cap.setCutDim(2);  
   box = new Boxxen();
   sliceIndex = 0;
+  modX = width/2;
+  modY = height/2;
 }
 
 //main draw method
@@ -89,7 +91,7 @@ void draw()
   {
     textSize(50);
     pushMatrix();
-    translate(width/2, height/2);
+    translate(modX, modY);
     //adjust for facing camera
     rotateX(0);
     rotateY(PI);
@@ -111,6 +113,12 @@ void mouseDragged()
     float rate = 0.01;
     xr += (pmouseY-mouseY) * rate;
     yr += (mouseX-pmouseX) * rate;
+  }
+  else if(view == "annotate")
+  {
+    float rate = 0.2;
+    modY -= (pmouseY-mouseY) * rate;
+    modX +=(mouseX-pmouseX) * rate;
   }
 }
 
@@ -148,6 +156,16 @@ void onPinch(float x, float y, float d)
     println("Pinch " + x + " " + y + " " + d);
   }
 }
+
+////onRotate
+//void onRotate(float x, float y, float ang)
+//{
+//  if (view == "annotate")
+//  {
+//    
+//  }
+//}
+
 
 //set active view
 void widgetOverlay()
