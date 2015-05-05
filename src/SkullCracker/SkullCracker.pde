@@ -229,7 +229,7 @@ void initializeWidgets()
     back_iv = new APButton(50, 50, "back");
     back_av = new APButton(50, 50, "back");
     back_settings = new APButton(50, 50, "back");
-    annotate = new APButton(width-250, 50, "annotate");
+    annotate = new APButton(width-300, 50, "annotate");
     save = new APButton(width-200, 50, "save");
     annotation = new APEditText(50, 200, width-100, 150 );  
     cutOutObjectS = new APButton(300, height-200, 200, 150, "<");
