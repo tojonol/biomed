@@ -51,7 +51,8 @@ for (int i = 0; i < 1; i++)
     String organMeshDir = path+"input\\"+patientid[i]+"\\" +organs[organCounter]+"\\";
     JSONObject meshObj = null;
     try{
-      meshObj = loadJSONObject(organMeshDir + "mesh.json");
+      String meshtemp = organMeshDir + "mesh.json";
+      meshObj = loadJSONObject(meshtemp);
     triangleJSON = meshObj.getJSONArray("mesh");
     JSONArray offsetJSON = meshObj.getJSONArray("offset");
     JSONOrgan.setJSONArray("offset", offsetJSON);
