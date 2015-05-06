@@ -120,9 +120,12 @@ void mouseDragged()
   }
   else if(view == "annotate")
   {
-    float rate = 0.2;
-    modY -= (pmouseY-mouseY) * rate;
-    modX +=(mouseX-pmouseX) * rate;
+//    float rate = 0.2;
+//    modY -= (pmouseY-mouseY) * rate;
+//    modX +=(mouseX-pmouseX) * rate;
+    modY -= (pmouseY-mouseY);
+    modX +=(mouseX-pmouseX);
+     
   }
 }
 
@@ -298,7 +301,8 @@ void fetchJSON()
         builder.append(row);
     }
     String json_Str = builder.toString();
-    saveJSON(json_Str);
+    String output = "/"+"patientInfo"+".txt";
+    saveJSON(json_Str, output);
     patientList.clear();
     fillPatientList(json_Str);
     //download images
@@ -360,16 +364,16 @@ void loadPatients()
 }
 
 //write JSON to device
-void saveJSON(String json)
+void saveJSON(String json, String outfile)
 {
     File sketchDir = getFilesDir();
     java.io.File outFile;
     try 
     {
-      outFile = new java.io.File(sketchDir.getAbsolutePath() + "/"+"patientInfo"+".txt");
+      outFile = new java.io.File(sketchDir.getAbsolutePath() + outfile);
       if (!outFile.exists())
         outFile.createNewFile();
-      FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + "/"+"patientInfo"+".txt");
+      FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + outfile);
 
       outWriter.write(json);
       outWriter.flush();
@@ -501,6 +505,8 @@ void onClickWidget(APWidget widget)
   {
      if (widget == patientList.get(i).getPatientButton())
      {
+//        sliceIndex = 1;
+//        cap.cut(0);
         currentPatient = i;  
         view = "image";
         imageViewer.addWidget(patientList.get(i).getOrganButtons());
