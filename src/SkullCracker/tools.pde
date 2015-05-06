@@ -22,6 +22,9 @@ class CutawayPlane
   int location;
   int keepDirection = 1;
   
+  int lastCut = -9999;
+  ArrayList<int[][]> lastCutResult;
+  
   // This could explode in a really bad way if anyone mutates it down the line,
   // let's really hope that doesn't happen
   int[][] nullArr = {null};
@@ -68,25 +71,6 @@ class CutawayPlane
   
   void draw() 
   {
-//    fill(153);
-//    noFill();
-//    pushMatrix();
-//    
-//    if (this.cutDim == DIM_X) rotateY(HALF_PI);
-//    else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
-//    
-//    // This might look a little wonky but it works since we're rotated in the 
-//    // plane's direction, increasing z moves us "forwards" relative to our
-//    // current (not absolute) facing.
-//    translate(0, 0, this.location);
-//   
-//    
-//    scale(0.75);    
-//    rectMode(CENTER);
-//    rect(0, 0, width, height);
-//    popMatrix();
-
-    
     fill(153);
     pushMatrix();
     translate(0,0, this.location);
@@ -101,6 +85,24 @@ class CutawayPlane
     vertex(0, 512,  0, 512);
     endShape();
     popMatrix();
+  }
+  
+  ArrayList<int[][]> cutPolies(int[][][] triangles) {
+    if (this.location == this.lastCut) {
+      return this.lastCutResult;
+    }
+    
+    println("Calc Cut A Mesh");
+    
+    ArrayList<int[][]> cutMesh = new ArrayList<int[][]>();
+    for (int[][] triangle : triangles) {
+      cutMesh.add(this.cutPoly(triangle)); 
+    }
+    
+    this.lastCut = this.location;
+    this.lastCutResult = cutMesh;
+    
+    return cutMesh;
   }
   
   float distToPoint(int[] point) 
@@ -224,10 +226,11 @@ class Boxxen
   
   void draw(CutawayPlane cap) 
   {
+    ArrayList<int[][]> polies = cap.cutPolies(triangles);
+    
     fill(255);
-    for (int i=0; i<triangles.length; i++) 
-    {
-      this.drawPoly(cap.cutPoly(triangles[i]));
+    for (int[][] poly : polies) {
+      this.drawPoly(poly);
     }
   }
   public void update(JSONArray ja) 

@@ -76,7 +76,7 @@ void draw()
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
     img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
-    print("slice index: "+sliceIndex+" other: "+cap.location);
+    //print("slice index: "+sliceIndex+" other: "+cap.location);
   }
   
   //Loading patient data, notify user
@@ -153,7 +153,7 @@ void onPinch(float x, float y, float d)
     prevPinchX = x;
     prevPinchY = y;
     prevPinchFrame = frameCount;
-    println("Pinch " + x + " " + y + " " + d);
+    //println("Pinch " + x + " " + y + " " + d);
   }
 }
 
