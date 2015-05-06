@@ -122,15 +122,14 @@ class CutawayPlane
   int[] interpolate(int[] p1, int[] p2) 
   {
     float totes = dist(p1[0], p1[1], p1[2], p2[0], p2[1], p2[2]),
-      slope = (p2[this.cutDim] - p1[this.cutDim]) / totes,
-      d = this.location / slope,
-      sx = (p2[0] - p1[0]) / totes,
-      sy = (p2[1] - p1[1]) / totes,
-      sz = (p2[2] - p1[2]) / totes;
+      l = this.distToPoint(p2) / (p2[2] - p1[2]),
+      sx = (p2[0] - p1[0]),
+      sy = (p2[1] - p1[1]),
+      sz = (p2[2] - p1[2]);
       
     int[] intersectionPoint = {
-      p2[0] + (int)(sx * d),
-      p2[1] + (int)(sy * d),
+      p2[0] + (int)(sx * l),
+      p2[1] + (int)(sy * l),
       this.location//p2[2] + (int)(sz * d)
     };
    return intersectionPoint;
