@@ -157,6 +157,8 @@ void onPinch(float x, float y, float d)
     prevPinchX = x;
     prevPinchY = y;
     prevPinchFrame = frameCount;
+    if (scaleRatio <= .1)
+      scaleRatio = .1;
     //println("Pinch " + x + " " + y + " " + d);
   }
 }
