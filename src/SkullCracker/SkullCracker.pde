@@ -27,7 +27,8 @@ void setup()
   imageMode(CENTER);
   orientation(PORTRAIT);
   gesture = new KetaiGesture(this);
-  loadPatients();
+  String infile = "/"+"patientInfo"+".txt";
+  loadPatients(infile);
   initializeWidgets();
   
   ortho();
@@ -105,7 +106,7 @@ void draw()
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
-    text(currOrgan.getTagString(), width/2, height-200);
+//    text(currOrgan.getTagString(sliceIndex), width/2, height-200);
   }
   widgetOverlay();
 }
@@ -129,22 +130,6 @@ void mouseDragged()
   }
 }
 
-//event listener for double tap
-void onDoubleTap(float x, float y)
-{
-//  if(view=="image")
-//  {
-//     cutaxis += 1;
-//     cutaxis = cutaxis%3;
-//     if(cutaxis == 0)
-//       cap.setCutDim(0); 
-//     else if (cutaxis == 1) 
-//       cap.setCutDim(1);
-//     else if (cutaxis == 2) 
-//       cap.setCutDim(2);
-//  }
-}
-
 //event listener for pinch
 void onPinch(float x, float y, float d)
 {
@@ -165,16 +150,6 @@ void onPinch(float x, float y, float d)
     //println("Pinch " + x + " " + y + " " + d);
   }
 }
-
-////onRotate
-//void onRotate(float x, float y, float ang)
-//{
-//  if (view == "annotate")
-//  {
-//    
-//  }
-//}
-
 
 //set active view
 void widgetOverlay()
@@ -339,13 +314,13 @@ void fillPatientList(String json_Str)
 }
 
 //read JSON into memory from device
-void loadPatients()
+void loadPatients(String infile)
 {
     File sketchDir = getFilesDir();
     // read strings from file into tags
     try 
     {
-      FileReader input = new FileReader(sketchDir.getAbsolutePath() + "/" + "patientInfo" + ".txt");
+      FileReader input = new FileReader(sketchDir.getAbsolutePath() + infile);
       BufferedReader bInput = new BufferedReader(input);
       String ns = bInput.readLine();
       StringBuilder builder = new StringBuilder();
@@ -454,13 +429,22 @@ void onClickWidget(APWidget widget)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.saveTags();
+    ArrayList<APButton> slicebuttons = currOrgan.getButtons();
+    for(int i = 0; i<slicebuttons.size();i++)
+    {
+       annotateView.removeWidget(slicebuttons.get(i));
+    }
     view = "image";
   }
   else if(widget == annotate)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
-    print("loadtags");
-    currOrgan.loadTags();
+//    currOrgan.loadTags();
+    ArrayList<APButton> slicebuttons = currOrgan.getButtons();
+    for(int i = 0; i<slicebuttons.size();i++)
+    {
+       annotateView.addWidget(slicebuttons.get(i));
+    }
     view = "annotate";
   } 
   else if(widget == help)
@@ -498,15 +482,13 @@ void onClickWidget(APWidget widget)
   else if(widget == save)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
-    currOrgan.addTag(annotation.getText());
+    currOrgan.addTag(annotation.getText(), sliceIndex);
     annotation.setText("");
   }
   for (int i = 0; i < patientList.size(); i++)
   {
      if (widget == patientList.get(i).getPatientButton())
      {
-//        sliceIndex = 1;
-//        cap.cut(0);
         currentPatient = i;  
         view = "image";
         imageViewer.addWidget(patientList.get(i).getOrganButtons());
@@ -514,6 +496,19 @@ void onClickWidget(APWidget widget)
         organSet = 0;
         img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
      }
+  }
+  if (view == "annotate")
+  {
+       OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
+
+      ArrayList<APButton> slicebuttons = currOrgan.getButtons();
+      for(int i = 0; i<slicebuttons.size();i++)
+      {
+         if (widget == slicebuttons.get(i))
+         {
+             print(slicebuttons.get(i)+" was selected");
+         }
+      } 
   }
   widgetOverlay();
 }

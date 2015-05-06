@@ -1,29 +1,72 @@
+import java.util.*;
+public class OrganTag
+{
+    int slice;
+    String tag;
+   public OrganTag(String tag, int imageSlice)
+  {
+    this.tag = tag;
+    slice = imageSlice;
+  } 
+}
+
 //Organ Data Class
 public class OrganData
 {
   String urlprefix = "http://alaromana.com/images/", organName, filename, id, tagfile;
-  ArrayList<String> tags;
+  ArrayList<OrganTag> tags;
   ArrayList<String> imgList;
+  ArrayList<APButton> tagButtons;
+  Set tagsliceset;
   JSONArray mesh;
   APRadioButton radio;
   public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files)
   {
+    tagsliceset = new HashSet();
+    tags = new ArrayList<OrganTag>();
     imgList = new ArrayList<String>();
+    tagButtons = new ArrayList<APButton>();
     id = id_;
     organName = organ_name;
-//    filenames = f_names;
-//    filename = f_names.get(0);
-//    filename = f_name;
     mesh = omesh;
     radio = new APRadioButton(organName);
     tagfile = "p"+id+organName + ".txt";
     loadTags();
+    placeTagButtons();
+    
     for(int i = 0; i<files.size();i++)
     {
       String curr = files.getString(i);
       imgList.add(curr);
     }
   } 
+ 
+
+  public ArrayList<APButton> getButtons()
+  {
+     return tagButtons; 
+  }
+ 
+  public void placeTagButtons()
+  {
+    for (int i = 0; i<tags.size();i++)
+    {
+      OrganTag curr = tags.get(i);
+      if (!tagsliceset.contains(curr.slice))
+      {
+         placeTagButton(curr.slice, tagsliceset.size());
+         tagsliceset.add(curr.slice); 
+      }
+    }  
+  }
+  
+  //place the button representing a patient
+  public void placeTagButton(int currslice, int offset)
+  {
+      String buttonlabel = getTagString(currslice);
+      APButton button = new APButton(width-400, 400+(offset*150), 400, 150, buttonlabel); 
+      tagButtons.add(button);
+   }
  
  //get the radio button for a given organ
  public APRadioButton getOrganButton()
@@ -81,20 +124,28 @@ public class OrganData
  public void loadTags()
  {
     File sketchDir = getFilesDir();
-    tags = new ArrayList<String>();
   
-    // read strings from file into tags
     try 
     {
-      print(tagfile);
       FileReader input = new FileReader(sketchDir.getAbsolutePath() + "/" + tagfile);
       BufferedReader bInput = new BufferedReader(input);
       String ns = bInput.readLine();
+      StringBuilder builder = new StringBuilder();
       while (ns != null) 
       {
-        tags.add(ns);
+        builder.append(ns);
         ns = bInput.readLine();
       }
+      String json_Str = builder.toString();
+      JSONArray JSONtags = JSONArray.parse(json_Str);
+      print(JSONtags.size() + " tags read from file\n");
+      for (int i = 0; i < JSONtags.size(); i++) 
+      {
+        JSONObject currtag = JSONtags.getJSONObject(i);
+        String temptag = currtag.getString("tag");
+        String tempslice = currtag.getString("slice");
+        addTag(temptag, Integer.parseInt(tempslice));
+      } 
     }
     catch (Exception e) 
     {
@@ -103,45 +154,56 @@ public class OrganData
  
  //save organs tags to file
   public void saveTags()
-  {
-    
-    File sketchDir = getFilesDir();
-    java.io.File outFile;
-    try 
+  { 
+    if (tags.size()>0)
     {
-      outFile = new java.io.File(sketchDir.getAbsolutePath() + "/"+tagfile);
-      if (!outFile.exists())
-        outFile.createNewFile();
-      FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + "/"+tagfile);
-      for (int i=0; i<tags.size (); i++) 
+      File sketchDir = getFilesDir();
+      java.io.File outFile;
+      try 
       {
-        outWriter.write(tags.get(i) + "\n");
+        outFile = new java.io.File(sketchDir.getAbsolutePath() + "/"+tagfile);
+        if (!outFile.exists())
+          outFile.createNewFile();
+        FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + "/"+tagfile);
+        outWriter.write("[\n");
+        print(tags.size());
+        for (int i=0; i<tags.size (); i++) 
+        {
+          outWriter.write("{ \"slice\": \"" + tags.get(i).slice + "\", \"tag\": \""+ tags.get(i).tag + "\" },");
+        }
+        outWriter.write("\n]");
+        
+        outWriter.flush();
+        
       }
-      outWriter.flush();
-      
-    }
-    catch (Exception e) 
-    {
+      catch (Exception e) 
+      {
+      }
     }
   }
  
   
   //get tag string
-  public String getTagString()
+  public String getTagString(int sliceIndex)
   {
     String tagString = "";
+    
     for (int i = 0; i< tags.size(); i++)
     {
-       tagString = tagString + tags.get(i) + ", "; 
+       if(sliceIndex == tags.get(i).slice)
+         tagString = tagString + tags.get(i).tag + ", "; 
     } 
-    if (tagString != "")
+    if(tagString.length()>0)
+    {
       tagString = tagString.substring(0, tagString.length()-2);
+    }
     return tagString;
   }
   
-  public void addTag(String tag)
+  public void addTag(String tag, int sliceIndex)
   {
-     tags.add(tag); 
+      OrganTag organTag = new OrganTag(tag, sliceIndex);
+      tags.add(organTag); 
   }
 }
 
