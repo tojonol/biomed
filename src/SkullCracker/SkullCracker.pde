@@ -29,7 +29,7 @@ void setup()
   gesture = new KetaiGesture(this);
   loadPatients();
   initializeWidgets();
-  size(1080, 1776, P3D);
+  
   ortho();
   cap = new CutawayPlane(10, 0);
   cap.setCutDim(2);  
@@ -37,6 +37,10 @@ void setup()
   sliceIndex = 0;
   modX = width/2;
   modY = height/2;
+}
+
+public String sketchRenderer() {
+  return P3D; 
 }
 
 //main draw method

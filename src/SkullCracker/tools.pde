@@ -77,13 +77,6 @@ class CutawayPlane
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
     else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
 
-    beginShape(QUADS);
-    texture(img);
-    vertex(0, 0,  0, 0);
-    vertex(512, 0,  512, 0);
-    vertex(512, 512,  512, 512);
-    vertex(0, 512,  0, 512);
-    endShape();
     popMatrix();
   }
   
@@ -93,6 +86,7 @@ class CutawayPlane
     }
     
     println("Calc Cut A Mesh");
+    println("At loc: " + this.location);
     
     ArrayList<int[][]> cutMesh = new ArrayList<int[][]>();
     for (int[][] triangle : triangles) {
@@ -137,7 +131,7 @@ class CutawayPlane
     int[] intersectionPoint = {
       p2[0] + (int)(sx * d),
       p2[1] + (int)(sy * d),
-      p2[2] + (int)(sz * d)
+      this.location//p2[2] + (int)(sz * d)
     };
    return intersectionPoint;
   }
@@ -147,7 +141,7 @@ class CutawayPlane
     int pts = this.pointsThisSide(poly);
     if (pts == 3) 
     {
-      return poly;      
+      return poly;
     } 
     else if (pts == 0) 
     {
