@@ -67,7 +67,11 @@ public class OrganData
         for(int i=0; i<tagButtons.size(); i++)
          {
            if(tagButtons.get(i).slice==sliceIndex)
-             return tagButtons.get(i); 
+           {
+             tagButtons.remove(i);
+             placeTagButton(sliceIndex,tagsliceset.size()-1);
+             return tagButtons.get(tagsliceset.size()-1); 
+           }
          } 
          print("couldn't find tag");
          return tagButtons.get(0);
@@ -82,7 +86,7 @@ public class OrganData
         for (int i = 0; i<tagButtons.size();i++)
         {
            if (tagButtons.get(i).slice == sliceIndex)
-             return sliceIndex; 
+             return i; 
         }
         print("this should never appear");
         return -1;
@@ -115,6 +119,7 @@ public class OrganData
   public void placeTagButton(int currslice, int offset)
   {
       String buttonlabel = getTagString(currslice);
+      print(buttonlabel);
       APButton button = new APButton(width-400, 400+(offset*150), 400, 150, buttonlabel); 
       ButtonElement be = new ButtonElement(button, currslice);
       tagButtons.add(be);

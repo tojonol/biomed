@@ -492,8 +492,11 @@ void onClickWidget(APWidget widget)
     }
     else
     {
+      print ("remove");
        annotateView.removeWidget(currOrgan.tagButtons.get(sliceButtonLocation).button);
+     print("getting button");
       ButtonElement currButton = currOrgan.updateButton(sliceIndex);
+      print("adding new button");
       annotateView.addWidget(currButton.button);
     }
     
