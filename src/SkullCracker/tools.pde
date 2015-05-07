@@ -69,13 +69,22 @@ class CutawayPlane
     }  
   }
   
-  void draw() 
+  void draw(int[] offset)
   {
+    println(this.location);
     fill(153);
     pushMatrix();
-    translate(0,0, this.location);
+    translate(0 - offset[0], 0 - offset[1], this.location);
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
     else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
+    
+    beginShape(QUADS);
+    texture(img);
+    vertex(0, 0,  0, 0);
+    vertex(img.width * scale[0], 0,  img.width, 0);
+    vertex(img.width * scale[0], img.height * scale[1],  img.width, img.height);
+    vertex(0, img.height * scale[1],  0, img.height);
+    endShape();
 
     popMatrix();
   }
@@ -201,6 +210,7 @@ class Boxxen
       {0, 100, 0},
       {100, 0, 0},
     }};
+    public int[] offset;
   
   void drawPoly(int[][] poly) 
   {
@@ -226,11 +236,13 @@ class Boxxen
       this.drawPoly(poly);
     }
   }
+  
   public void update(JSONArray ja) 
   {
     maxMesh = 0; 
     minMesh = 0;
     JSONArray tripleCoord, triplePixel;
+    
     int [][][] temptri = new int[ja.size()][3][3];
     for(int tri = 0; tri<ja.size(); tri++)
     {

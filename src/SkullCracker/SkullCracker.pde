@@ -19,25 +19,36 @@ Boxxen box;
 CutawayPlane cap;
 KetaiGesture gesture;
 float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY, maxMesh, minMesh;
+float scale[] = {0.98, 0.98, 2.4};
 
 //general program setup
 void setup()
 {
+  println("fug");
+  println("ffug");
   textAlign(CENTER);
+  println("nug");
   imageMode(CENTER);
+  println("fffug");
   orientation(PORTRAIT);
+  println("fffug");
   gesture = new KetaiGesture(this);
+  println("kug");
   String infile = "/"+"patientInfo"+".txt";
   loadPatients(infile);
+   println("pug");
   initializeWidgets();
   
   ortho();
   cap = new CutawayPlane(10, 0);
   cap.setCutDim(2);  
+  println("sug");
   box = new Boxxen();
+  println("lug");
   sliceIndex = 0;
   modX = width/2;
   modY = height/2;
+  println("mug");
 }
 
 public String sketchRenderer() {
@@ -59,6 +70,10 @@ void draw()
      text(helpmsg,width/2,200);
   }
   
+  println("lol");
+  int[] offset = patientList.get(currentPatient).getOrganData(
+    patientList.get(currentPatient).getActiveOrgan()).offset;
+
   //ImageViewer Mode
   if (view == "image")
   {
@@ -67,7 +82,6 @@ void draw()
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
         box.update(patientList.get(currentPatient).getOrganMesh(organSet));
-//        img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
     }
     //Draw image information
     textSize(50);
@@ -77,7 +91,9 @@ void draw()
     rotateY(yr);
     scale(scaleRatio);
     box.draw(cap);
-    cap.draw();
+    println("lel");
+    cap.draw(offset);
+    println("kek");
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
     img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
@@ -102,7 +118,7 @@ void draw()
     rotateY(PI);
     scale(scaleRatio);
     box.draw(cap);
-    cap.draw();
+    cap.draw(offset);
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
@@ -305,7 +321,7 @@ void fillPatientList(String json_Str)
       {
           JSONObject organ = JSONorgans.getJSONObject(j);
        
-          OrganData organObject = new OrganData(id, organ.getString("organ_name"), organ.getJSONArray("mesh"), organ.getJSONArray("files"));
+          OrganData organObject = new OrganData(id, organ.getString("organ_name"), organ.getJSONArray("mesh"), organ.getJSONArray("files"), organ.getJSONArray("offset"));
           organList.add(organObject);
       }
       PatientData pd = new PatientData(id, patientname, organList);
@@ -454,26 +470,30 @@ void onClickWidget(APWidget widget)
   else if(widget == cutOutObjectS)
   {
 //    cap.location -= 1;
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
     cap.cut(-1);
-    sliceIndex = cap.location;
+    sliceIndex = (int)((cap.location + currOrgan.offset[2]) / scale[2]);
   }
   else if(widget == cutOutObjectL)
   {
 //    cap.location -= 5;
     cap.cut(-5);
-    sliceIndex = cap.location;
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
+    sliceIndex = (int)((cap.location + currOrgan.offset[2]) / scale[2]);
   }
   else if(widget == cutInObjectS)
   {
 //    cap.location += 1;
     cap.cut(1);
-    sliceIndex = cap.location;
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
+    sliceIndex = (int)((cap.location + currOrgan.offset[2]) / scale[2]);
   }
   else if(widget == cutInObjectL)
   {
 //    cap.location += 5;
     cap.cut(5);
-    sliceIndex = cap.location;
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
+    sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
   }
   else if(widget == back_settings)
   {

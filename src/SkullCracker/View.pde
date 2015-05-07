@@ -20,8 +20,12 @@ public class OrganData
   Set tagsliceset;
   JSONArray mesh;
   APRadioButton radio;
-  public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files)
+  
+  public int[] offset = new int[3];
+  
+  public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files, JSONArray offset)
   {
+    println("kkkkaa");
     tagsliceset = new HashSet();
     tags = new ArrayList<OrganTag>();
     imgList = new ArrayList<String>();
@@ -33,6 +37,16 @@ public class OrganData
     tagfile = "p"+id+organName + ".txt";
     loadTags();
     placeTagButtons();
+    
+    println("baAAAA");
+    println(offset.size());
+    println(offset.getInt(0));
+    println(offset.getInt(1));
+    println(offset.getInt(2));
+    this.offset[0] = offset.getInt(0, 0);
+    this.offset[1] = offset.getInt(1, 0);
+    this.offset[2] = offset.getInt(2, 0);
+    println("JAJAJAkkkaa");
     
     for(int i = 0; i<files.size();i++)
     {
