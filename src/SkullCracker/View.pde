@@ -52,6 +52,46 @@ public class OrganData
     }
   } 
  
+  public ButtonElement updateButton(int sliceIndex)
+  {
+    //if a new tag is added and we need a new button
+     if (!tagsliceset.contains(sliceIndex))
+     {
+        placeTagButton(sliceIndex, tagsliceset.size());
+        tagsliceset.add(sliceIndex);
+        return tagButtons.get(tagButtons.size()-1);
+     }
+     //if a tag is already made at slice, update button
+     else
+     {
+        for(int i=0; i<tagButtons.size(); i++)
+         {
+           if(tagButtons.get(i).slice==sliceIndex)
+             return tagButtons.get(i); 
+         } 
+         print("couldn't find tag");
+         return tagButtons.get(0);
+     }
+  }
+ 
+  //check if slice has a button
+  public int slicebuttonpresent(int sliceIndex)
+  {
+    if (tagsliceset.contains(sliceIndex))
+    {
+        for (int i = 0; i<tagButtons.size();i++)
+        {
+           if (tagButtons.get(i).slice == sliceIndex)
+             return sliceIndex; 
+        }
+        print("this should never appear");
+        return -1;
+    }
+    else
+    {
+       return -1; 
+    }
+  }
 
   public ArrayList<ButtonElement> getButtons()
   {

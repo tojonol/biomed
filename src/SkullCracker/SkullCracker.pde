@@ -483,6 +483,21 @@ void onClickWidget(APWidget widget)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.addTag(annotation.getText(), sliceIndex);
+    //if its a new button just add it
+    int sliceButtonLocation = currOrgan.slicebuttonpresent(sliceIndex);
+    if (sliceButtonLocation==-1)
+    {
+      ButtonElement currButton = currOrgan.updateButton(sliceIndex);
+      annotateView.addWidget(currButton.button);
+    }
+    else
+    {
+       annotateView.removeWidget(currOrgan.tagButtons.get(sliceButtonLocation).button);
+      ButtonElement currButton = currOrgan.updateButton(sliceIndex);
+      annotateView.addWidget(currButton.button);
+    }
+    
+    annotation.setText("");
   }
   for (int i = 0; i < patientList.size(); i++)
   {
