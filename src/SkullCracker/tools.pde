@@ -38,7 +38,8 @@ class CutawayPlane
     this.setCutDim(cutDim);
   }
   
-  public void invalidateCache() {
+  public void invalidateCache()
+  {
     this.lastCut = -9999;
   }
   
@@ -92,21 +93,26 @@ class CutawayPlane
     popMatrix();
   }
   
-  PShape cutPolies(int[][][] triangles) {
+  PShape cutPolies(int[][][] triangles)
+  {
     int activeOrganIdx = patientList.get(currentPatient).getActiveOrgan();
-    if (this.location == this.lastCut && activeOrganIdx == this.lastOrganIdx) {
+    if (this.location == this.lastCut && activeOrganIdx == this.lastOrganIdx)
+    {
       return this.lastCutResult;
     }
     
     PShape cutMesh = createShape();
     cutMesh.beginShape(TRIANGLES);
     
-    for (int[][] triangle : triangles) {
+    for (int[][] triangle : triangles)
+    {
       int[][] cutTri = this.cutPoly(triangle);
       
       if (cutTri[0] == null) {
         continue;
-      } else if (cutTri.length == 4) {
+      }
+      else if (cutTri.length == 4)
+      {
         cutMesh.vertex(cutTri[0][0], cutTri[0][1], cutTri[0][2]);
         cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
         cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
@@ -114,7 +120,9 @@ class CutawayPlane
         cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
         cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
         cutMesh.vertex(cutTri[3][0], cutTri[3][1], cutTri[3][2]);
-      } else {
+      }
+      else
+      {
         cutMesh.vertex(cutTri[0][0], cutTri[0][1], cutTri[0][2]);
         cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
         cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
