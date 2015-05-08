@@ -71,7 +71,6 @@ class CutawayPlane
   
   void draw(int[] offset)
   {
-    println(this.location);
     fill(153);
     pushMatrix();
     translate(0 - offset[0], 0 - offset[1], this.location);
@@ -93,9 +92,6 @@ class CutawayPlane
     if (this.location == this.lastCut) {
       return this.lastCutResult;
     }
-    
-    println("Calc Cut A Mesh");
-    println("At loc: " + this.location);
     
     ArrayList<int[][]> cutMesh = new ArrayList<int[][]>();
     for (int[][] triangle : triangles) {

@@ -36,7 +36,6 @@ void setup()
   cap = new CutawayPlane(10, 0);
   cap.setCutDim(2);  
   box = new Boxxen();
-  println("lug");
   sliceIndex = 0;
   modX = width/2;
   modY = height/2;
@@ -61,7 +60,6 @@ void draw()
      text(helpmsg,width/2,200);
   }
   
-  println("lol");
   int[] offset = patientList.get(currentPatient).getOrganData(
     patientList.get(currentPatient).getActiveOrgan()).offset;
 
@@ -82,9 +80,7 @@ void draw()
     rotateY(yr);
     scale(scaleRatio);
     box.draw(cap);
-    println("lel");
     cap.draw(offset);
-    println("kek");
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
     img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
@@ -460,28 +456,24 @@ void onClickWidget(APWidget widget)
   }
   else if(widget == cutOutObjectS)
   {
-//    cap.location -= 1;
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
     cap.cut(-1);
-    sliceIndex = (int)((cap.location + currOrgan.offset[2]) / scale[2]);
+    sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
   }
   else if(widget == cutOutObjectL)
   {
-//    cap.location -= 5;
     cap.cut(-5);
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
-    sliceIndex = (int)((cap.location + currOrgan.offset[2]) / scale[2]);
+    sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
   }
   else if(widget == cutInObjectS)
   {
-//    cap.location += 1;
     cap.cut(1);
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
-    sliceIndex = (int)((cap.location + currOrgan.offset[2]) / scale[2]);
+    sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
   }
   else if(widget == cutInObjectL)
   {
-//    cap.location += 5;
     cap.cut(5);
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
     sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
