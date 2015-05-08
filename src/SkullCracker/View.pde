@@ -1,3 +1,14 @@
+public class ButtonElement
+{
+   APButton button;
+   int slice;
+   public ButtonElement(APButton button, int slice)
+   {
+     this.slice = slice;
+     this.button = button;
+   }  
+}
+
 import java.util.*;
 public class OrganTag
 {
@@ -16,7 +27,7 @@ public class OrganData
   String urlprefix = "http://alaromana.com/images/", organName, filename, id, tagfile;
   ArrayList<OrganTag> tags;
   ArrayList<String> imgList;
-  ArrayList<APButton> tagButtons;
+  ArrayList<ButtonElement> tagButtons;
   Set tagsliceset;
   JSONArray mesh;
   APRadioButton radio;
@@ -29,7 +40,7 @@ public class OrganData
     tagsliceset = new HashSet();
     tags = new ArrayList<OrganTag>();
     imgList = new ArrayList<String>();
-    tagButtons = new ArrayList<APButton>();
+    tagButtons = new ArrayList<ButtonElement>();
     id = id_;
     organName = organ_name;
     mesh = omesh;
@@ -55,8 +66,52 @@ public class OrganData
     }
   } 
  
+  public ButtonElement updateButton(int sliceIndex)
+  {
+    //if a new tag is added and we need a new button
+     if (!tagsliceset.contains(sliceIndex))
+     {
+        placeTagButton(sliceIndex, tagsliceset.size());
+        tagsliceset.add(sliceIndex);
+        return tagButtons.get(tagButtons.size()-1);
+     }
+     //if a tag is already made at slice, update button
+     else
+     {
+        for(int i=0; i<tagButtons.size(); i++)
+         {
+           if(tagButtons.get(i).slice==sliceIndex)
+           {
+             tagButtons.remove(i);
+             placeTagButton(sliceIndex,tagsliceset.size()-1);
+             return tagButtons.get(tagsliceset.size()-1); 
+           }
+         } 
+         print("couldn't find tag");
+         return tagButtons.get(0);
+     }
+  }
+ 
+  //check if slice has a button
+  public int slicebuttonpresent(int sliceIndex)
+  {
+    if (tagsliceset.contains(sliceIndex))
+    {
+        for (int i = 0; i<tagButtons.size();i++)
+        {
+           if (tagButtons.get(i).slice == sliceIndex)
+             return i; 
+        }
+        print("this should never appear");
+        return -1;
+    }
+    else
+    {
+       return -1; 
+    }
+  }
 
-  public ArrayList<APButton> getButtons()
+  public ArrayList<ButtonElement> getButtons()
   {
      return tagButtons; 
   }
@@ -78,8 +133,10 @@ public class OrganData
   public void placeTagButton(int currslice, int offset)
   {
       String buttonlabel = getTagString(currslice);
+      print(buttonlabel);
       APButton button = new APButton(width-400, 400+(offset*150), 400, 150, buttonlabel); 
-      tagButtons.add(button);
+      ButtonElement be = new ButtonElement(button, currslice);
+      tagButtons.add(be);
    }
  
  //get the radio button for a given organ

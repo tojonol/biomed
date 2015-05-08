@@ -445,10 +445,10 @@ void onClickWidget(APWidget widget)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.saveTags();
-    ArrayList<APButton> slicebuttons = currOrgan.getButtons();
+    ArrayList<ButtonElement> slicebuttons = currOrgan.getButtons();
     for(int i = 0; i<slicebuttons.size();i++)
     {
-       annotateView.removeWidget(slicebuttons.get(i));
+       annotateView.removeWidget(slicebuttons.get(i).button);
     }
     view = "image";
   }
@@ -456,10 +456,10 @@ void onClickWidget(APWidget widget)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
 //    currOrgan.loadTags();
-    ArrayList<APButton> slicebuttons = currOrgan.getButtons();
+    ArrayList<ButtonElement> slicebuttons = currOrgan.getButtons();
     for(int i = 0; i<slicebuttons.size();i++)
     {
-       annotateView.addWidget(slicebuttons.get(i));
+       annotateView.addWidget(slicebuttons.get(i).button);
     }
     view = "annotate";
   } 
@@ -503,6 +503,23 @@ void onClickWidget(APWidget widget)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.addTag(annotation.getText(), sliceIndex);
+    //if its a new button just add it
+    int sliceButtonLocation = currOrgan.slicebuttonpresent(sliceIndex);
+    if (sliceButtonLocation==-1)
+    {
+      ButtonElement currButton = currOrgan.updateButton(sliceIndex);
+      annotateView.addWidget(currButton.button);
+    }
+    else
+    {
+      print ("remove");
+       annotateView.removeWidget(currOrgan.tagButtons.get(sliceButtonLocation).button);
+     print("getting button");
+      ButtonElement currButton = currOrgan.updateButton(sliceIndex);
+      print("adding new button");
+      annotateView.addWidget(currButton.button);
+    }
+    
     annotation.setText("");
   }
   for (int i = 0; i < patientList.size(); i++)
@@ -521,12 +538,13 @@ void onClickWidget(APWidget widget)
   {
        OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
 
-      ArrayList<APButton> slicebuttons = currOrgan.getButtons();
+      ArrayList<ButtonElement> slicebuttons = currOrgan.getButtons();
       for(int i = 0; i<slicebuttons.size();i++)
       {
-         if (widget == slicebuttons.get(i))
+         if (widget == slicebuttons.get(i).button)
          {
-             print(slicebuttons.get(i)+" was selected");
+             sliceIndex = slicebuttons.get(i).slice;
+             cap.location = sliceIndex;
          }
       } 
   }
