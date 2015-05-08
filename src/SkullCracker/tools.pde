@@ -22,7 +22,7 @@ class CutawayPlane
   int location;
   int keepDirection = 1;
   
-  int lastCut = -9999;
+  int lastCut = -9999, lastOrganIdx = -1;
   PShape lastCutResult;
   
   // This could explode in a really bad way if anyone mutates it down the line,
@@ -36,6 +36,10 @@ class CutawayPlane
   {
     this.location = location;  
     this.setCutDim(cutDim);
+  }
+  
+  public void invalidateCache() {
+    this.lastCut = -9999;
   }
   
   public void setCutDim(int cutDim) 
@@ -89,7 +93,8 @@ class CutawayPlane
   }
   
   PShape cutPolies(int[][][] triangles) {
-    if (this.location == this.lastCut) {
+    int activeOrganIdx = patientList.get(currentPatient).getActiveOrgan();
+    if (this.location == this.lastCut && activeOrganIdx == this.lastOrganIdx) {
       return this.lastCutResult;
     }
     
@@ -119,6 +124,7 @@ class CutawayPlane
     cutMesh.endShape(CLOSE);
     
     this.lastCut = this.location;
+    this.lastOrganIdx = activeOrganIdx;
     this.lastCutResult = cutMesh;
     
     return cutMesh;

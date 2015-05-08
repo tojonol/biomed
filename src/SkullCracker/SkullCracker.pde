@@ -406,7 +406,7 @@ void removePatientWidgets()
 
 //track what widget is clicked on
 void onClickWidget(APWidget widget)
-{  
+{
   //if it was save that was clicked
   if(widget == update)
   { 
@@ -514,7 +514,7 @@ void onClickWidget(APWidget widget)
   {
      if (widget == patientList.get(i).getPatientButton())
      {
-        currentPatient = i;  
+        currentPatient = i;
         view = "image";
         imageViewer.addWidget(patientList.get(i).getOrganButtons());
         box.update(patientList.get(i).getOrganMesh(0));
