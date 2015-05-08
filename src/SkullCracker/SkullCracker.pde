@@ -24,31 +24,22 @@ float scale[] = {0.98, 0.98, 2.4};
 //general program setup
 void setup()
 {
-  println("fug");
-  println("ffug");
   textAlign(CENTER);
-  println("nug");
   imageMode(CENTER);
-  println("fffug");
   orientation(PORTRAIT);
-  println("fffug");
   gesture = new KetaiGesture(this);
-  println("kug");
   String infile = "/"+"patientInfo"+".txt";
   loadPatients(infile);
-   println("pug");
   initializeWidgets();
   
   ortho();
   cap = new CutawayPlane(10, 0);
   cap.setCutDim(2);  
-  println("sug");
   box = new Boxxen();
   println("lug");
   sliceIndex = 0;
   modX = width/2;
   modY = height/2;
-  println("mug");
 }
 
 public String sketchRenderer() {
