@@ -23,7 +23,7 @@ class CutawayPlane
   int keepDirection = 1;
   
   int lastCut = -9999;
-  ArrayList<int[][]> lastCutResult;
+  PShape lastCutResult;
   
   // This could explode in a really bad way if anyone mutates it down the line,
   // let's really hope that doesn't happen
@@ -88,15 +88,35 @@ class CutawayPlane
     popMatrix();
   }
   
-  ArrayList<int[][]> cutPolies(int[][][] triangles) {
+  PShape cutPolies(int[][][] triangles) {
     if (this.location == this.lastCut) {
       return this.lastCutResult;
     }
     
-    ArrayList<int[][]> cutMesh = new ArrayList<int[][]>();
+    PShape cutMesh = createShape();
+    cutMesh.beginShape(TRIANGLES);
+    
     for (int[][] triangle : triangles) {
-      cutMesh.add(this.cutPoly(triangle)); 
+      int[][] cutTri = this.cutPoly(triangle);
+      
+      if (cutTri[0] == null) {
+        continue;
+      } else if (cutTri.length == 4) {
+        cutMesh.vertex(cutTri[0][0], cutTri[0][1], cutTri[0][2]);
+        cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
+        cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
+        
+        cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
+        cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
+        cutMesh.vertex(cutTri[3][0], cutTri[3][1], cutTri[3][2]);
+      } else {
+        cutMesh.vertex(cutTri[0][0], cutTri[0][1], cutTri[0][2]);
+        cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
+        cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
+      }
     }
+    
+    cutMesh.endShape(CLOSE);
     
     this.lastCut = this.location;
     this.lastCutResult = cutMesh;
@@ -225,12 +245,10 @@ class Boxxen
   
   void draw(CutawayPlane cap) 
   {
-    ArrayList<int[][]> polies = cap.cutPolies(triangles);
+    PShape polies = cap.cutPolies(triangles);
     
     fill(255);
-    for (int[][] poly : polies) {
-      this.drawPoly(poly);
-    }
+    shape(polies);
   }
   
   public void update(JSONArray ja) 
