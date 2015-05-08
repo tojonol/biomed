@@ -73,12 +73,17 @@ void draw()
         box.update(patientList.get(currentPatient).getOrganMesh(organSet));
     }
     //Draw image information
+    pointLight(100, 100, 100, 200, 200, 200);
+    pointLight(100, 100, 100, -200, -200, -200);
+    ambientLight(120, 120, 120);
+    
     textSize(50);
     pushMatrix();
     translate(width/2, height/2);
     rotateX(xr);
     rotateY(yr);
     scale(scaleRatio);
+    noStroke();
     box.draw(cap);
     cap.draw(offset);
     popMatrix();
