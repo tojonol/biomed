@@ -60,12 +60,13 @@ void draw()
      text(helpmsg,width/2,200);
   }
   
-  int[] offset = patientList.get(currentPatient).getOrganData(
-    patientList.get(currentPatient).getActiveOrgan()).offset;
+  int[] offset;
 
   //ImageViewer Mode
   if (view == "image")
   {
+    offset = patientList.get(currentPatient).getOrganData(
+        patientList.get(currentPatient).getActiveOrgan()).offset;
     //Check radio button and set active organ
     if (patientList.get(currentPatient).getActiveOrgan() != organSet)
     {
@@ -102,6 +103,9 @@ void draw()
   //Annotate mode
   if (view == "annotate")
   {
+    offset = patientList.get(currentPatient).getOrganData(
+        patientList.get(currentPatient).getActiveOrgan()).offset;
+        
     textSize(50);
     pushMatrix();
     translate(modX, modY);
