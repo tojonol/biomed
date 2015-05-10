@@ -145,7 +145,7 @@ public class OrganData
          String imageloc = urlprefix+"patients/"+id+"/"+organName+"/"+imgList.get(i);
          PImage currimg = loadImage(imageloc);
          String objectfile =  "p"+id+organName +imgList.get(i);
-//         print("Saving file: "+ objectfile);
+         print("Saving file: "+ objectfile);
          currimg.save(objectfile);
        }     
    }
