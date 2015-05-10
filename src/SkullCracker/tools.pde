@@ -81,7 +81,6 @@ class CutawayPlane
     fill(153);
     pushMatrix();
     translate(0 - currOrgan.organOffset[0], 0 - currOrgan.organOffset[1], this.location);
-    translate(0,0, this.location);
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
     else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
     
