@@ -31,10 +31,11 @@ public class OrganData
   ArrayList<OrganTag> tags;
   ArrayList<String> imgList;
   ArrayList<ButtonElement> tagButtons;
+  int[] organOffset;
   Set tagsliceset;
   JSONArray mesh;
   APRadioButton radio;
-  public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files)
+  public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files, int[] organOffset)
   {
     tagsliceset = new HashSet();
     tags = new ArrayList<OrganTag>();
@@ -47,7 +48,7 @@ public class OrganData
     tagfile = "p"+id+organName + ".txt";
     loadTags();
     placeTagButtons();
-    
+    this.organOffset = organOffset;
     for(int i = 0; i<files.size();i++)
     {
       String curr = files.getString(i);
@@ -77,7 +78,7 @@ public class OrganData
              return tagButtons.get(tagsliceset.size()-1); 
            }
          } 
-         print("couldn't find tag");
+//         print("couldn't find tag");
          return tagButtons.get(0);
      }
   }
@@ -92,7 +93,7 @@ public class OrganData
            if (tagButtons.get(i).slice == sliceIndex)
              return i; 
         }
-        print("this should never appear");
+//        print("this should never appear");
         return -1;
     }
     else
@@ -123,7 +124,7 @@ public class OrganData
   public void placeTagButton(int currslice, int offset)
   {
       String buttonlabel = getTagString(currslice);
-      print(buttonlabel);
+//      print(buttonlabel);
       APButton button = new APButton(width-400, 400+(offset*150), 400, 150, buttonlabel); 
       ButtonElement be = new ButtonElement(button, currslice, offset);
       tagButtons.add(be);
@@ -144,7 +145,7 @@ public class OrganData
          String imageloc = urlprefix+"patients/"+id+"/"+organName+"/"+imgList.get(i);
          PImage currimg = loadImage(imageloc);
          String objectfile =  "p"+id+organName +imgList.get(i);
-         print("Saving file: "+ objectfile);
+//         print("Saving file: "+ objectfile);
          currimg.save(objectfile);
        }     
    }
@@ -199,7 +200,7 @@ public class OrganData
       }
       String json_Str = builder.toString();
       JSONArray JSONtags = JSONArray.parse(json_Str);
-      print(JSONtags.size() + " tags read from file\n");
+//      print(JSONtags.size() + " tags read from file\n");
       for (int i = 0; i < JSONtags.size(); i++) 
       {
         JSONObject currtag = JSONtags.getJSONObject(i);
@@ -227,7 +228,7 @@ public class OrganData
           outFile.createNewFile();
         FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + "/"+tagfile);
         outWriter.write("[\n");
-        print(tags.size());
+//        print(tags.size());
         for (int i=0; i<tags.size (); i++) 
         {
           outWriter.write("{ \"slice\": \"" + tags.get(i).slice + "\", \"tag\": \""+ tags.get(i).tag + "\" },");

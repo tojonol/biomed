@@ -22,6 +22,7 @@ Boxxen box;
 CutawayPlane cap;
 KetaiGesture gesture;
 float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY, maxMesh, minMesh;
+float scale[] = {0.98, 0.98, 2.4};
 
 //general program setup
 void setup()
@@ -62,17 +63,26 @@ void draw()
      text(helpmsg,width/2,200);
   }
   
+
+  int[] currOrganOffset = new int[3];
   //ImageViewer Mode
   if (view == "image")
   {
+    currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
+    println(currOrganOffset[0] + "->" +currOrganOffset[1] + "->" +currOrganOffset[2]  );
+    
     //Check radio button and set active organ
     if (patientList.get(currentPatient).getActiveOrgan() != organSet)
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
         box.update(patientList.get(currentPatient).getOrganMesh(organSet));
 //        img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
+        
     }
     //Draw image information
+    pointLight(100, 100, 100, 200, 200, 200);
+    pointLight(100, 100, 100, -200, -200, -200);
+    ambientLight(120, 120, 120);
     textSize(50);
     pushMatrix();
     translate(width/2, height/2);
@@ -80,6 +90,7 @@ void draw()
     rotateY(yr);
     scale(scaleRatio);
     box.draw(cap);
+//    cap.draw(offsetArray);
     cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
@@ -97,6 +108,9 @@ void draw()
   //Annotate mode
   if (view == "annotate")
   {
+    currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
+    println(currOrganOffset[0] + "->" +currOrganOffset[1] + "->" +currOrganOffset[2]  );
+    
     textSize(50);
     pushMatrix();
     translate(modX, modY);
@@ -105,6 +119,7 @@ void draw()
     rotateY(PI);
     scale(scaleRatio);
     box.draw(cap);
+//    cap.draw(offsetArray);
     cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
@@ -307,8 +322,9 @@ void fillPatientList(String json_Str)
       for(int j = 0; j< JSONorgans.size(); j++)
       {
           JSONObject organ = JSONorgans.getJSONObject(j);
-       
-          OrganData organObject = new OrganData(id, organ.getString("organ_name"), organ.getJSONArray("mesh"), organ.getJSONArray("files"));
+          JSONArray offsetJSON = organ.getJSONArray("offset");
+          int[] offsetArray = {offsetJSON.getInt(0), offsetJSON.getInt(1), offsetJSON.getInt(2)}; 
+          OrganData organObject = new OrganData(id, organ.getString("organ_name"), organ.getJSONArray("mesh"), organ.getJSONArray("files"), offsetArray);
           organList.add(organObject);
       }
       PatientData pd = new PatientData(id, patientname, organList);
@@ -496,11 +512,11 @@ void onClickWidget(APWidget widget)
     }
     else
     {
-      print ("remove");
+//      print ("remove");
        annotateView.removeWidget(currOrgan.tagButtons.get(sliceButtonLocation).button);
-     print("getting button");
+//     print("getting button");
       ButtonElement currButton = currOrgan.updateButton(sliceIndex);
-      print("adding new button");
+//      print("adding new button");
       annotateView.addWidget(currButton.button);
     }
     
@@ -543,6 +559,7 @@ public boolean surfaceTouchEvent(MotionEvent event)
   //forward event to class for processing
   return gesture.surfaceTouchEvent(event);
 }
+
 
 //helper method for hiding the keyboard
 void hideVirtualKeyboard() 
