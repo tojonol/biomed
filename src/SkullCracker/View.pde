@@ -2,10 +2,13 @@ public class ButtonElement
 {
    APButton button;
    int slice;
-   public ButtonElement(APButton button, int slice)
+   int offset; 
+   
+   public ButtonElement(APButton button, int slice, int offset)
    {
      this.slice = slice;
      this.button = button;
+     this.offset = offset;
    }  
 }
 
@@ -31,10 +34,7 @@ public class OrganData
   Set tagsliceset;
   JSONArray mesh;
   APRadioButton radio;
-  
-  public int[] offset = new int[3];
-  
-  public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files, JSONArray offset)
+  public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files)
   {
     tagsliceset = new HashSet();
     tags = new ArrayList<OrganTag>();
@@ -47,10 +47,6 @@ public class OrganData
     tagfile = "p"+id+organName + ".txt";
     loadTags();
     placeTagButtons();
-    
-    this.offset[0] = offset.getInt(0, 0);
-    this.offset[1] = offset.getInt(1, 0);
-    this.offset[2] = offset.getInt(2, 0);
     
     for(int i = 0; i<files.size();i++)
     {
@@ -75,8 +71,9 @@ public class OrganData
          {
            if(tagButtons.get(i).slice==sliceIndex)
            {
+             int offset = tagButtons.get(i).offset;
              tagButtons.remove(i);
-             placeTagButton(sliceIndex,tagsliceset.size()-1);
+             placeTagButton(sliceIndex,offset);
              return tagButtons.get(tagsliceset.size()-1); 
            }
          } 
@@ -128,7 +125,7 @@ public class OrganData
       String buttonlabel = getTagString(currslice);
       print(buttonlabel);
       APButton button = new APButton(width-400, 400+(offset*150), 400, 150, buttonlabel); 
-      ButtonElement be = new ButtonElement(button, currslice);
+      ButtonElement be = new ButtonElement(button, currslice, offset);
       tagButtons.add(be);
    }
  

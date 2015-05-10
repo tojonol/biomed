@@ -22,8 +22,8 @@ class CutawayPlane
   int location;
   int keepDirection = 1;
   
-  int lastCut = -9999, lastOrganIdx = -1;
-  PShape lastCutResult;
+  int lastCut = -9999;
+  ArrayList<int[][]> lastCutResult;
   
   // This could explode in a really bad way if anyone mutates it down the line,
   // let's really hope that doesn't happen
@@ -36,11 +36,6 @@ class CutawayPlane
   {
     this.location = location;  
     this.setCutDim(cutDim);
-  }
-  
-  public void invalidateCache()
-  {
-    this.lastCut = -9999;
   }
   
   public void setCutDim(int cutDim) 
@@ -74,65 +69,31 @@ class CutawayPlane
     }  
   }
   
-  void draw(int[] offset)
+  void draw() 
   {
     fill(153);
     pushMatrix();
-    translate(0 - offset[0], 0 - offset[1], this.location);
+    translate(0,0, this.location);
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
     else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
-    
-    beginShape(QUADS);
-    texture(img);
-    vertex(0, 0,  0, 0);
-    vertex(img.width * scale[0], 0,  img.width, 0);
-    vertex(img.width * scale[0], img.height * scale[1],  img.width, img.height);
-    vertex(0, img.height * scale[1],  0, img.height);
-    endShape();
 
     popMatrix();
   }
   
-  PShape cutPolies(int[][][] triangles)
-  {
-    int activeOrganIdx = patientList.get(currentPatient).getActiveOrgan();
-    if (this.location == this.lastCut && activeOrganIdx == this.lastOrganIdx)
-    {
+  ArrayList<int[][]> cutPolies(int[][][] triangles) {
+    if (this.location == this.lastCut) {
       return this.lastCutResult;
     }
     
-    PShape cutMesh = createShape();
-    cutMesh.beginShape(TRIANGLES);
+    println("Calc Cut A Mesh");
+    println("At loc: " + this.location);
     
-    for (int[][] triangle : triangles)
-    {
-      int[][] cutTri = this.cutPoly(triangle);
-      
-      if (cutTri[0] == null) {
-        continue;
-      }
-      else if (cutTri.length == 4)
-      {
-        cutMesh.vertex(cutTri[0][0], cutTri[0][1], cutTri[0][2]);
-        cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
-        cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
-        
-        cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
-        cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
-        cutMesh.vertex(cutTri[3][0], cutTri[3][1], cutTri[3][2]);
-      }
-      else
-      {
-        cutMesh.vertex(cutTri[0][0], cutTri[0][1], cutTri[0][2]);
-        cutMesh.vertex(cutTri[1][0], cutTri[1][1], cutTri[1][2]);
-        cutMesh.vertex(cutTri[2][0], cutTri[2][1], cutTri[2][2]);
-      }
+    ArrayList<int[][]> cutMesh = new ArrayList<int[][]>();
+    for (int[][] triangle : triangles) {
+      cutMesh.add(this.cutPoly(triangle)); 
     }
     
-    cutMesh.endShape(CLOSE);
-    
     this.lastCut = this.location;
-    this.lastOrganIdx = activeOrganIdx;
     this.lastCutResult = cutMesh;
     
     return cutMesh;
@@ -240,7 +201,6 @@ class Boxxen
       {0, 100, 0},
       {100, 0, 0},
     }};
-    public int[] offset;
   
   void drawPoly(int[][] poly) 
   {
@@ -259,18 +219,18 @@ class Boxxen
   
   void draw(CutawayPlane cap) 
   {
-    PShape polies = cap.cutPolies(triangles);
+    ArrayList<int[][]> polies = cap.cutPolies(triangles);
     
     fill(255);
-    shape(polies);
+    for (int[][] poly : polies) {
+      this.drawPoly(poly);
+    }
   }
-  
   public void update(JSONArray ja) 
   {
     maxMesh = 0; 
     minMesh = 0;
     JSONArray tripleCoord, triplePixel;
-    
     int [][][] temptri = new int[ja.size()][3][3];
     for(int tri = 0; tri<ja.size(); tri++)
     {
