@@ -3,6 +3,9 @@ import android.view.MotionEvent;
 import apwidgets.*;
 import ketai.ui.*;
 import java.io.*;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 
 JSONObject json;
 JSONArray patients;
@@ -481,6 +484,7 @@ void onClickWidget(APWidget widget)
   }
   else if(widget == save)
   {
+    hideVirtualKeyboard();
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.addTag(annotation.getText(), sliceIndex);
     //if its a new button just add it
@@ -540,4 +544,9 @@ public boolean surfaceTouchEvent(MotionEvent event)
   return gesture.surfaceTouchEvent(event);
 }
 
-
+//helper method for hiding the keyboard
+void hideVirtualKeyboard() 
+{
+  InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+}
