@@ -3,6 +3,9 @@ import android.view.MotionEvent;
 import apwidgets.*;
 import ketai.ui.*;
 import java.io.*;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 
 JSONObject json;
 JSONArray patients;
@@ -53,31 +56,33 @@ void draw()
   //Help view
   if(view == "help")
   {
-     String helpmsg = "\n\nWhen viewing images:\n\tDrag to rotate\n\tPinch to zoom\n\tUse arrow buttons to slice object\n\n";
+     String helpmsg = "\n\nWhen viewing images:\n\tDrag to rotate\n\tPinch to zoom\n\tUse arrow buttons to slice object\n\nWhen Annotating images:\n\tDrag to move object\n\tPinch to zoom\n\tClick label to view region";
      PFont f =  createFont("Arial",20,true);
      textFont(f);         
      textSize(60);
      text(helpmsg,width/2,200);
   }
   
-  int[] offset;
 
+  int[] currOrganOffset = new int[3];
   //ImageViewer Mode
   if (view == "image")
   {
-    offset = patientList.get(currentPatient).getOrganData(
-        patientList.get(currentPatient).getActiveOrgan()).offset;
+    currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
+    println(currOrganOffset[0] + "->" +currOrganOffset[1] + "->" +currOrganOffset[2]  );
+    
     //Check radio button and set active organ
     if (patientList.get(currentPatient).getActiveOrgan() != organSet)
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
         box.update(patientList.get(currentPatient).getOrganMesh(organSet));
+//        img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
+        
     }
     //Draw image information
     pointLight(100, 100, 100, 200, 200, 200);
     pointLight(100, 100, 100, -200, -200, -200);
     ambientLight(120, 120, 120);
-    
     textSize(50);
     pushMatrix();
     translate(width/2, height/2);
@@ -86,7 +91,8 @@ void draw()
     scale(scaleRatio);
     noStroke();
     box.draw(cap);
-    cap.draw(offset);
+//    cap.draw(offsetArray);
+    cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
     img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
@@ -103,9 +109,9 @@ void draw()
   //Annotate mode
   if (view == "annotate")
   {
-    offset = patientList.get(currentPatient).getOrganData(
-        patientList.get(currentPatient).getActiveOrgan()).offset;
-        
+    currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
+    println(currOrganOffset[0] + "->" +currOrganOffset[1] + "->" +currOrganOffset[2]  );
+    
     textSize(50);
     pushMatrix();
     translate(modX, modY);
@@ -114,7 +120,8 @@ void draw()
     rotateY(PI);
     scale(scaleRatio);
     box.draw(cap);
-    cap.draw(offset);
+//    cap.draw(offsetArray);
+    cap.draw();
     popMatrix();
     text(patientList.get(currentPatient).getpName(), width/2, 150);
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
@@ -316,8 +323,9 @@ void fillPatientList(String json_Str)
       for(int j = 0; j< JSONorgans.size(); j++)
       {
           JSONObject organ = JSONorgans.getJSONObject(j);
-       
-          OrganData organObject = new OrganData(id, organ.getString("organ_name"), organ.getJSONArray("mesh"), organ.getJSONArray("files"), organ.getJSONArray("offset"));
+          JSONArray offsetJSON = organ.getJSONArray("offset");
+          int[] offsetArray = {offsetJSON.getInt(0), offsetJSON.getInt(1), offsetJSON.getInt(2)}; 
+          OrganData organObject = new OrganData(id, organ.getString("organ_name"), organ.getJSONArray("mesh"), organ.getJSONArray("files"), offsetArray);
           organList.add(organObject);
       }
       PatientData pd = new PatientData(id, patientname, organList);
@@ -410,7 +418,7 @@ void removePatientWidgets()
 
 //track what widget is clicked on
 void onClickWidget(APWidget widget)
-{
+{  
   //if it was save that was clicked
   if(widget == update)
   { 
@@ -465,27 +473,27 @@ void onClickWidget(APWidget widget)
   }
   else if(widget == cutOutObjectS)
   {
-    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
+//    cap.location -= 1;
     cap.cut(-1);
-    sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
+    sliceIndex = cap.location;
   }
   else if(widget == cutOutObjectL)
   {
+//    cap.location -= 5;
     cap.cut(-5);
-    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
-    sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
+    sliceIndex = cap.location;
   }
   else if(widget == cutInObjectS)
   {
+//    cap.location += 1;
     cap.cut(1);
-    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
-    sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
+    sliceIndex = cap.location;
   }
   else if(widget == cutInObjectL)
   {
+//    cap.location += 5;
     cap.cut(5);
-    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
-    sliceIndex = (int)((cap.location / scale[2]) + currOrgan.offset[2]);
+    sliceIndex = cap.location;
   }
   else if(widget == back_settings)
   {
@@ -493,6 +501,7 @@ void onClickWidget(APWidget widget)
   }
   else if(widget == save)
   {
+    hideVirtualKeyboard();
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.addTag(annotation.getText(), sliceIndex);
     //if its a new button just add it
@@ -504,11 +513,11 @@ void onClickWidget(APWidget widget)
     }
     else
     {
-      print ("remove");
+//      print ("remove");
        annotateView.removeWidget(currOrgan.tagButtons.get(sliceButtonLocation).button);
-     print("getting button");
+//     print("getting button");
       ButtonElement currButton = currOrgan.updateButton(sliceIndex);
-      print("adding new button");
+//      print("adding new button");
       annotateView.addWidget(currButton.button);
     }
     
@@ -518,7 +527,7 @@ void onClickWidget(APWidget widget)
   {
      if (widget == patientList.get(i).getPatientButton())
      {
-        currentPatient = i;
+        currentPatient = i;  
         view = "image";
         imageViewer.addWidget(patientList.get(i).getOrganButtons());
         box.update(patientList.get(i).getOrganMesh(0));
@@ -553,3 +562,9 @@ public boolean surfaceTouchEvent(MotionEvent event)
 }
 
 
+//helper method for hiding the keyboard
+void hideVirtualKeyboard() 
+{
+  InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+  imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+}
