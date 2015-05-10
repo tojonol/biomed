@@ -83,7 +83,9 @@ class CutawayPlane
     else if (this.cutDim == DIM_Y) rotateX(-HALF_PI);
     
     beginShape(QUADS);
-    texture(img);
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet)
+    int sliceIndex = (int)((this.location / scale[2]) + currOrgan.offset[2]);
+    texture(patientList.get(currentPatient).getActiveOrganImage(sliceIndex););
     vertex(0, 0,  0, 0);
     vertex(img.width * scale[0], 0,  img.width, 0);
     vertex(img.width * scale[0], img.height * scale[1],  img.width, img.height);
