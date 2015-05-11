@@ -15,12 +15,15 @@ public class ButtonElement
 import java.util.*;
 public class OrganTag
 {
-    int slice;
-    String tag;
-   public OrganTag(String tag, int imageSlice)
+  int slice, radius;
+  int[] location;
+  String tag;
+  public OrganTag(String tag, int imageSlice, int[] location, int radius)
   {
     this.tag = tag;
     slice = imageSlice;
+    this.location = location;
+    this.radius = radius;
   } 
 }
 
@@ -206,7 +209,7 @@ public class OrganData
         JSONObject currtag = JSONtags.getJSONObject(i);
         String temptag = currtag.getString("tag");
         String tempslice = currtag.getString("slice");
-        addTag(temptag, Integer.parseInt(tempslice));
+        //addTag(temptag, Integer.parseInt(tempslice));
       } 
     }
     catch (Exception e) 
@@ -262,10 +265,10 @@ public class OrganData
     return tagString;
   }
   
-  public void addTag(String tag, int sliceIndex)
+  public void addTag(String tag, int sliceIndex, int[] location, int radius)
   {
-      OrganTag organTag = new OrganTag(tag, sliceIndex);
-      tags.add(organTag); 
+      OrganTag organTag = new OrganTag(tag, sliceIndex, location, radius);
+      tags.add(organTag);
   }
 }
 

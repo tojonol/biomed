@@ -23,6 +23,9 @@ CutawayPlane cap;
 KetaiGesture gesture;
 float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY, maxMesh, minMesh;
 float scale[] = {0.98, 0.98, 2.4};
+boolean dragActive;
+int dragStartX, dragStartY;
+OrganTag tmpTag;
 
 //general program setup
 void setup()
@@ -42,6 +45,9 @@ void setup()
   sliceIndex = 0;
   modX = width/2;
   modY = height/2;
+  
+  int[] initialLoc = new int[3];
+  tmpTag = new OrganTag("", 0, initialLoc, 0);
 }
 
 public String sketchRenderer() {
@@ -69,7 +75,6 @@ void draw()
   if (view == "image")
   {
     currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
-    println(currOrganOffset[0] + "->" +currOrganOffset[1] + "->" +currOrganOffset[2]  );
     
     //Check radio button and set active organ
     if (patientList.get(currentPatient).getActiveOrgan() != organSet)
@@ -110,7 +115,6 @@ void draw()
   if (view == "annotate")
   {
     currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
-    println(currOrganOffset[0] + "->" +currOrganOffset[1] + "->" +currOrganOffset[2]  );
     
     textSize(50);
     pushMatrix();
@@ -128,7 +132,31 @@ void draw()
 //    text(currOrgan.getTagString(sliceIndex), width/2, height-200);
   }
   widgetOverlay();
+  
+  fill(255, 0, 0);
+  ellipse(width/2, height/2, 3, 3);
+  fill(255, 255, 255);
 }
+
+void mousePressed()
+{
+  println(mouseX + " " + mouseY);
+  println(scaleRatio);
+  dragActive = true;
+  dragStartX = mouseX;
+  dragStartY = mouseY;
+  
+  tmpTag.location[0] = (int)((mouseX - modX) / scaleRatio);
+  tmpTag.location[1] = (int)((mouseY - modY) / scaleRatio);
+  tmpTag.location[2] = cap.location;
+  println("tagloc: " + tmpTag.location[0] + " " + tmpTag.location[1]);
+  tmpTag.radius = 0;
+}
+void mouseReleased() 
+{
+  dragActive = false;
+};
+
 
 void mouseDragged() 
 {
@@ -140,12 +168,10 @@ void mouseDragged()
   }
   else if(view == "annotate")
   {
-//    float rate = 0.2;
-//    modY -= (pmouseY-mouseY) * rate;
-//    modX +=(mouseX-pmouseX) * rate;
-    modY -= (pmouseY-mouseY);
-    modX +=(mouseX-pmouseX);
-     
+    int dx = dragStartX - mouseX,
+      dy = dragStartY - mouseY;
+
+    tmpTag.radius = (int)(sqrt(dx*dx + dy*dy) / scaleRatio);
   }
 }
 
@@ -466,6 +492,9 @@ void onClickWidget(APWidget widget)
        annotateView.addWidget(slicebuttons.get(i).button);
     }
     view = "annotate";
+    
+    modX = width/2;
+    modY = height/2;
   } 
   else if(widget == help)
   {
@@ -503,7 +532,7 @@ void onClickWidget(APWidget widget)
   {
     hideVirtualKeyboard();
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
-    currOrgan.addTag(annotation.getText(), sliceIndex);
+    //currOrgan.addTag(d.getText(), sliceIndex);
     //if its a new button just add it
     int sliceButtonLocation = currOrgan.slicebuttonpresent(sliceIndex);
     if (sliceButtonLocation==-1)

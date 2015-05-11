@@ -74,6 +74,26 @@ class CutawayPlane
     }  
   }
   
+  void drawTag(OrganTag tag)
+  {
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
+    float dist = this.distToPoint(tag.location);
+   
+    if (dist >= tag.radius)
+    {
+      return;
+    }
+    float circWidth = sqrt(tag.radius*tag.radius - dist*dist) * 2;
+     
+    pushMatrix();
+    rotateX(0);
+    rotateY(PI);
+      
+    ellipse(tag.location[0] - currOrgan.organOffset[0], tag.location[1] - currOrgan.organOffset[1], circWidth, circWidth);
+    
+    popMatrix();
+  }
+  
   void draw() 
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
@@ -93,8 +113,16 @@ class CutawayPlane
     vertex(img.width * scale[0], img.height * scale[1],  img.width, img.height);
     vertex(0, img.height * scale[1],  0, img.height);
     endShape();
-
+    
     popMatrix();
+
+    
+    for (OrganTag tag : currOrgan.tags) {
+      println("herelol");
+    }
+    
+    this.drawTag(tmpTag);
+
   }
   
   PShape cutPolies(int[][][] triangles) {
