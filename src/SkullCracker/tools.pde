@@ -107,6 +107,11 @@ class CutawayPlane
     fill(255, 0, 255, 64);
     ellipse(tag.location[0], tag.location[1], circWidth, circWidth);
     
+    textMode(CENTER);
+    fill(255);
+    textSize(circWidth / 4);
+    text(tag.tag, tag.location[0], tag.location[1]-circWidth/2, 1);
+    
     popMatrix();
   }
   
@@ -125,7 +130,8 @@ class CutawayPlane
     beginShape(QUADS);
     
     sliceIndex = (int)((this.location / scale[2]) + currOrgan.organOffset[2]);
-    texture(patientList.get(currentPatient).getActiveOrganImage(sliceIndex));
+    img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
+    texture(img);
     vertex(0, 0,  0, 0);
     vertex(img.width * scale[0], 0,  img.width, 0);
     vertex(img.width * scale[0], img.height * scale[1],  img.width, img.height);
@@ -145,7 +151,6 @@ class CutawayPlane
   
   PShape cutPolies(int[][][] triangles)
   {
-    println("k6");
     this.locLock.acquireUninterruptibly();
     int activeOrganIdx = patientList.get(currentPatient).getActiveOrgan();
     if (this.location == this.lastCut && activeOrganIdx == this.lastOrganIdx)
@@ -297,14 +302,10 @@ class Boxxen
 
   void draw(CutawayPlane cap) 
   {
-    println("z1");
     PShape polies = cap.cutPolies(triangles);
-    println("z2");
     fill(255, 255, 255, 255);
     noStroke();
-    println("z3");
     shape(polies);
-    println("z4");
   }
 
   public void update(JSONArray ja) 

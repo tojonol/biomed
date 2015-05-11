@@ -100,7 +100,7 @@ void draw()
     cap.draw();
     popMatrix();
     fill(255, 255, 255, 255);
-    text(patientList.get(currentPatient).getpName() + " RIP", width/2, 150);
+    text(patientList.get(currentPatient).getpName(), width/2, 150);
     img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
   }
   
@@ -114,7 +114,6 @@ void draw()
   //Annotate mode
   if (view == "annotate")
   {
-    println("pa!");
     textSize(50);
     pushMatrix();
     translate(modX, modY);
@@ -122,23 +121,12 @@ void draw()
     rotateX(0);
     rotateY(PI);
     scale(scaleRatio);
-    println("pb!");
     box.draw(cap);
-    println("pc!");
     cap.draw();
-    println("pd!");
     popMatrix();
     fill(255, 255, 255, 255);
+    textSize(50);
     text(patientList.get(currentPatient).getpName(), width/2, 150);
-    
-    if (gBe != null)
-    {
-      println(gBe.tag.location[2]);
-      cap.setLocation(gBe.tag.location[2]);
-      gBe = null;
-      println("OUT!");
-      println(sliceIndex);
-    }
   }
 }
 
@@ -153,6 +141,7 @@ void mousePressed()
   tmpTag.location[2] = cap.location;
   tmpTag.radius = 0;
 }
+
 void mouseReleased() 
 {
   dragActive = false;
@@ -586,7 +575,7 @@ public boolean surfaceTouchEvent(MotionEvent event)
 
 
 //helper method for hiding the keyboard
-void hideVirtualKeyboard() 
+void hideVirtualKeyboard()
 {
   InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
   imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);

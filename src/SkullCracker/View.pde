@@ -199,8 +199,8 @@ public class OrganData
   {
       OrganTag organTag = new OrganTag(tag, sliceIndex, location, radius);
       tags.add(organTag);
-      ButtonElement be = this.addTagButton(organTag);
-      annotateView.addWidget(be.button);
+      // ButtonElement be = this.addTagButton(organTag);
+      // annotateView.addWidget(be.button);
   }
 }
 
