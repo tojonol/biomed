@@ -86,7 +86,7 @@ class CutawayPlane
     float circWidth = sqrt(tag.radius*tag.radius - dist*dist) * 2;
      
     pushMatrix();
-    translate(0, 0, this.location);
+    translate(0, 0, this.location - 1);
     rotateX(0);
     rotateY(PI);
       
@@ -123,7 +123,7 @@ class CutawayPlane
 
     
     for (OrganTag tag : currOrgan.tags) {
-      println("herelol");
+      this.drawTag(tag);
     }
     
     this.drawTag(tmpTag);
@@ -296,7 +296,8 @@ class Boxxen
   {
     PShape polies = cap.cutPolies(triangles);
     
-    fill(255);
+    fill(255, 255, 255, 255);
+    noStroke();
     shape(polies);
   }
 

@@ -23,7 +23,7 @@ CutawayPlane cap;
 KetaiGesture gesture;
 float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY, maxMesh, minMesh;
 float scale[] = {0.98, 0.98, 2.4};
-boolean dragActive;
+boolean dragActive, pinchActive;
 int dragStartX, dragStartY;
 OrganTag tmpTag;
 
@@ -72,6 +72,8 @@ void draw()
 
   int[] currOrganOffset = new int[3];
   //ImageViewer Mode
+  fill(255, 255, 255, 255);
+  
   if (view == "image")
   {
     currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
@@ -81,10 +83,9 @@ void draw()
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
         box.update(patientList.get(currentPatient).getOrganMesh(organSet));
-//        img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
         
     }
-    //Draw image information
+
     pointLight(100, 100, 100, 200, 200, 200);
     pointLight(100, 100, 100, -200, -200, -200);
     ambientLight(120, 120, 120);
@@ -132,16 +133,10 @@ void draw()
 //    text(currOrgan.getTagString(sliceIndex), width/2, height-200);
   }
   widgetOverlay();
-  
-  fill(255, 0, 0);
-  ellipse(width/2, height/2, 3, 3);
-  fill(255, 255, 255);
 }
 
 void mousePressed()
 {
-  println(mouseX + " " + mouseY);
-  println(scaleRatio);
   dragActive = true;
   dragStartX = mouseX;
   dragStartY = mouseY;
@@ -149,17 +144,21 @@ void mousePressed()
   tmpTag.location[0] = (int)((mouseX - modX) / scaleRatio);
   tmpTag.location[1] = (int)((mouseY - modY) / scaleRatio);
   tmpTag.location[2] = cap.location;
-  println("tagloc: " + tmpTag.location[0] + " " + tmpTag.location[1]);
   tmpTag.radius = 0;
 }
 void mouseReleased() 
 {
   dragActive = false;
+  pinchActive = false;
 };
 
 
 void mouseDragged() 
 {
+  if (pinchActive) {
+    return;
+  }
+  
   if(view == "image")
   {
     float rate = 0.01;
@@ -178,6 +177,7 @@ void mouseDragged()
 //event listener for pinch
 void onPinch(float x, float y, float d)
 {
+  pinchActive = true;
   if(view=="image" || view=="annotate")
   {  
     if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
@@ -193,7 +193,7 @@ void onPinch(float x, float y, float d)
     if (scaleRatio <= .1)
       scaleRatio = .1;
     //println("Pinch " + x + " " + y + " " + d);
-  }
+  } 
 }
 
 //set active view
@@ -475,6 +475,7 @@ void onClickWidget(APWidget widget)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.saveTags();
+    hideVirtualKeyboard();
     ArrayList<ButtonElement> slicebuttons = currOrgan.getButtons();
     for(int i = 0; i<slicebuttons.size();i++)
     {
@@ -532,7 +533,9 @@ void onClickWidget(APWidget widget)
   {
     hideVirtualKeyboard();
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
-    //currOrgan.addTag(d.getText(), sliceIndex);
+    currOrgan.addTag(annotation.getText(), sliceIndex, tmpTag.location, tmpTag.radius);
+    tmpTag.radius = 0;
+    tmpTag.location = new int[3];
     //if its a new button just add it
     int sliceButtonLocation = currOrgan.slicebuttonpresent(sliceIndex);
     if (sliceButtonLocation==-1)
@@ -574,7 +577,7 @@ void onClickWidget(APWidget widget)
          if (widget == slicebuttons.get(i).button)
          {
              sliceIndex = slicebuttons.get(i).slice;
-             cap.location = sliceIndex;
+             cap.location = (int)(sliceIndex * scale[2] - currOrgan.organOffset[2]);
          }
       } 
   }
