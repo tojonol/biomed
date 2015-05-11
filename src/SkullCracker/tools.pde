@@ -86,10 +86,14 @@ class CutawayPlane
     float circWidth = sqrt(tag.radius*tag.radius - dist*dist) * 2;
      
     pushMatrix();
+    translate(0, 0, this.location);
     rotateX(0);
     rotateY(PI);
       
-    ellipse(tag.location[0] - currOrgan.organOffset[0], tag.location[1] - currOrgan.organOffset[1], circWidth, circWidth);
+    stroke(255, 0, 255);
+    strokeWeight(1);
+    fill(255, 0, 255, 64);
+    ellipse(tag.location[0], tag.location[1], circWidth, circWidth);
     
     popMatrix();
   }
@@ -99,6 +103,7 @@ class CutawayPlane
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
 
     fill(153);
+    noStroke();
     pushMatrix();
     translate(0 - currOrgan.organOffset[0], 0 - currOrgan.organOffset[1], this.location);
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
@@ -107,9 +112,7 @@ class CutawayPlane
     beginShape(QUADS);
     
     int sliceIndex = (int)((this.location / scale[2]) + currOrgan.organOffset[2]);
-    img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
-    texture(img);
-//    texture(patientList.get(currentPatient).getActiveOrganImage(sliceIndex));
+    texture(patientList.get(currentPatient).getActiveOrganImage(sliceIndex));
     vertex(0, 0,  0, 0);
     vertex(img.width * scale[0], 0,  img.width, 0);
     vertex(img.width * scale[0], img.height * scale[1],  img.width, img.height);
