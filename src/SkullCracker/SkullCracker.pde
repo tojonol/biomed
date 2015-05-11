@@ -7,6 +7,8 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 
+ButtonElement gBe;
+
 JSONObject json;
 JSONArray patients;
 PImage img;
@@ -26,6 +28,8 @@ float scale[] = {0.98, 0.98, 2.4};
 boolean dragActive, pinchActive;
 int dragStartX, dragStartY;
 OrganTag tmpTag;
+
+
 
 //general program setup
 void setup()
@@ -68,16 +72,12 @@ void draw()
      textSize(60);
      text(helpmsg,width/2,200);
   }
-  
 
-  int[] currOrganOffset = new int[3];
   //ImageViewer Mode
   fill(255, 255, 255, 255);
   
   if (view == "image")
   {
-    currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
-    
     //Check radio button and set active organ
     if (patientList.get(currentPatient).getActiveOrgan() != organSet)
     {
@@ -97,12 +97,11 @@ void draw()
     scale(scaleRatio);
     noStroke();
     box.draw(cap);
-//    cap.draw(offsetArray);
     cap.draw();
     popMatrix();
-    text(patientList.get(currentPatient).getpName(), width/2, 150);
+    fill(255, 255, 255, 255);
+    text(patientList.get(currentPatient).getpName() + " RIP", width/2, 150);
     img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
-    //print("slice index: "+sliceIndex+" other: "+cap.location);
   }
   
   //Loading patient data, notify user
@@ -115,8 +114,7 @@ void draw()
   //Annotate mode
   if (view == "annotate")
   {
-    currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
-    
+    println("pa!");
     textSize(50);
     pushMatrix();
     translate(modX, modY);
@@ -124,15 +122,24 @@ void draw()
     rotateX(0);
     rotateY(PI);
     scale(scaleRatio);
+    println("pb!");
     box.draw(cap);
-//    cap.draw(offsetArray);
+    println("pc!");
     cap.draw();
+    println("pd!");
     popMatrix();
+    fill(255, 255, 255, 255);
     text(patientList.get(currentPatient).getpName(), width/2, 150);
-    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
-//    text(currOrgan.getTagString(sliceIndex), width/2, height-200);
+    
+    if (gBe != null)
+    {
+      println(gBe.tag.location[2]);
+      cap.setLocation(gBe.tag.location[2]);
+      gBe = null;
+      println("OUT!");
+      println(sliceIndex);
+    }
   }
-  widgetOverlay();
 }
 
 void mousePressed()
@@ -453,23 +460,28 @@ void onClickWidget(APWidget widget)
   else if(widget == viewpatients)
   {
     view = "patients";
+    widgetOverlay();
   }
   else if(widget == settings)
   {
     view = "settings";
+    widgetOverlay();
   }
   else if(widget == back_iv)
   {
     view = "patients";
+    widgetOverlay();
     imageViewer.removeWidget(patientList.get(currentPatient).getOrganButtons());
   }
   else if(widget == back_cw)
   {
     view = "home";
+    widgetOverlay();
   }
   else if(widget == back_sw)
   {
     view = "home";
+    widgetOverlay();
   }
   else if(widget == back_av)
   {
@@ -482,6 +494,7 @@ void onClickWidget(APWidget widget)
        annotateView.removeWidget(slicebuttons.get(i).button);
     }
     view = "image";
+    widgetOverlay();
   }
   else if(widget == annotate)
   {
@@ -493,6 +506,7 @@ void onClickWidget(APWidget widget)
        annotateView.addWidget(slicebuttons.get(i).button);
     }
     view = "annotate";
+    widgetOverlay();
     
     modX = width/2;
     modY = height/2;
@@ -500,58 +514,36 @@ void onClickWidget(APWidget widget)
   else if(widget == help)
   {
     view = "help"; 
+    widgetOverlay();
   }
   else if(widget == cutOutObjectS)
   {
-//    cap.location -= 1;
     cap.cut(-1);
-    sliceIndex = cap.location;
   }
   else if(widget == cutOutObjectL)
   {
-//    cap.location -= 5;
     cap.cut(-5);
-    sliceIndex = cap.location;
   }
   else if(widget == cutInObjectS)
   {
-//    cap.location += 1;
     cap.cut(1);
-    sliceIndex = cap.location;
   }
   else if(widget == cutInObjectL)
   {
-//    cap.location += 5;
     cap.cut(5);
-    sliceIndex = cap.location;
   }
   else if(widget == back_settings)
   {
     view = "settings";
+    widgetOverlay();
   }
-  else if(widget == save)
+  else if (widget == save)
   {
     hideVirtualKeyboard();
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.addTag(annotation.getText(), sliceIndex, tmpTag.location, tmpTag.radius);
     tmpTag.radius = 0;
     tmpTag.location = new int[3];
-    //if its a new button just add it
-    int sliceButtonLocation = currOrgan.slicebuttonpresent(sliceIndex);
-    if (sliceButtonLocation==-1)
-    {
-      ButtonElement currButton = currOrgan.updateButton(sliceIndex);
-      annotateView.addWidget(currButton.button);
-    }
-    else
-    {
-//      print ("remove");
-       annotateView.removeWidget(currOrgan.tagButtons.get(sliceButtonLocation).button);
-//     print("getting button");
-      ButtonElement currButton = currOrgan.updateButton(sliceIndex);
-//      print("adding new button");
-      annotateView.addWidget(currButton.button);
-    }
     
     annotation.setText("");
   }
@@ -561,6 +553,7 @@ void onClickWidget(APWidget widget)
      {
         currentPatient = i;  
         view = "image";
+        widgetOverlay();
         imageViewer.addWidget(patientList.get(i).getOrganButtons());
         box.update(patientList.get(i).getOrganMesh(0));
         organSet = 0;
@@ -569,19 +562,17 @@ void onClickWidget(APWidget widget)
   }
   if (view == "annotate")
   {
-       OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
+    println("SHOULD NOT BE HERE");
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
 
-      ArrayList<ButtonElement> slicebuttons = currOrgan.getButtons();
-      for(int i = 0; i<slicebuttons.size();i++)
+    for (ButtonElement be : currOrgan.getButtons())
+    {
+      if (widget == be.button)
       {
-         if (widget == slicebuttons.get(i).button)
-         {
-             sliceIndex = slicebuttons.get(i).slice;
-             cap.location = (int)(sliceIndex * scale[2] - currOrgan.organOffset[2]);
-         }
-      } 
+        gBe = be;
+      }
+    }
   }
-  widgetOverlay();
 }
 
 public boolean surfaceTouchEvent(MotionEvent event) 

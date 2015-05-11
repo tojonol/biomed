@@ -1,15 +1,15 @@
 public class ButtonElement
 {
-   APButton button;
-   int slice;
-   int offset; 
+  OrganTag tag;
+  APButton button;
+  int offset;
    
-   public ButtonElement(APButton button, int slice, int offset)
-   {
-     this.slice = slice;
-     this.button = button;
-     this.offset = offset;
-   }  
+  public ButtonElement(APButton button, int offset, OrganTag tag)
+  {
+    this.button = button;
+    this.offset = offset;
+    this.tag = tag;
+  }  
 }
 
 import java.util.*;
@@ -40,7 +40,6 @@ public class OrganData
   APRadioButton radio;
   public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files, int[] organOffset)
   {
-    tagsliceset = new HashSet();
     tags = new ArrayList<OrganTag>();
     imgList = new ArrayList<String>();
     tagButtons = new ArrayList<ButtonElement>();
@@ -59,80 +58,29 @@ public class OrganData
     }
   } 
  
-  public ButtonElement updateButton(int sliceIndex)
-  {
-    //if a new tag is added and we need a new button
-     if (!tagsliceset.contains(sliceIndex))
-     {
-        placeTagButton(sliceIndex, tagsliceset.size());
-        tagsliceset.add(sliceIndex);
-        return tagButtons.get(tagButtons.size()-1);
-     }
-     //if a tag is already made at slice, update button
-     else
-     {
-        for(int i=0; i<tagButtons.size(); i++)
-         {
-           if(tagButtons.get(i).slice==sliceIndex)
-           {
-             int offset = tagButtons.get(i).offset;
-             tagButtons.remove(i);
-             placeTagButton(sliceIndex,offset);
-             return tagButtons.get(tagsliceset.size()-1); 
-           }
-         } 
-//         print("couldn't find tag");
-         return tagButtons.get(0);
-     }
-  }
- 
-  //check if slice has a button
-  public int slicebuttonpresent(int sliceIndex)
-  {
-    if (tagsliceset.contains(sliceIndex))
-    {
-        for (int i = 0; i<tagButtons.size();i++)
-        {
-           if (tagButtons.get(i).slice == sliceIndex)
-             return i; 
-        }
-//        print("this should never appear");
-        return -1;
-    }
-    else
-    {
-       return -1; 
-    }
-  }
-
   public ArrayList<ButtonElement> getButtons()
   {
-     return tagButtons; 
-  }
- 
-  public void placeTagButtons()
-  {
-    for (int i = 0; i<tags.size();i++)
-    {
-      OrganTag curr = tags.get(i);
-      if (!tagsliceset.contains(curr.slice))
-      {
-         placeTagButton(curr.slice, tagsliceset.size());
-         tagsliceset.add(curr.slice); 
-      }
-    }  
+     return tagButtons;
   }
   
-  //place the button representing a patient
-  public void placeTagButton(int currslice, int offset)
+  public void placeTagButtons()
   {
-      String buttonlabel = getTagString(currslice);
-//      print(buttonlabel);
-      APButton button = new APButton(width-400, 400+(offset*150), 400, 150, buttonlabel); 
-      ButtonElement be = new ButtonElement(button, currslice, offset);
-      tagButtons.add(be);
-   }
- 
+    for (OrganTag tag : this.tags)
+    {
+      addTagButton(tag);
+    }
+  }
+  
+  ButtonElement addTagButton(OrganTag tag)
+  {
+    int offset = this.tagButtons.size();
+    APButton button = new APButton(width-400, 400+(offset*150), 400, 150, tag.tag);
+    ButtonElement be = new ButtonElement(button, offset, tag);
+    tagButtons.add(be);
+    
+    return be;
+  }
+  
  //get the radio button for a given organ
  public APRadioButton getOrganButton()
  {
@@ -246,29 +194,13 @@ public class OrganData
       }
     }
   }
- 
-  
-  //get tag string
-  public String getTagString(int sliceIndex)
-  {
-    String tagString = "";
-    
-    for (int i = 0; i< tags.size(); i++)
-    {
-       if(sliceIndex == tags.get(i).slice)
-         tagString = tagString + tags.get(i).tag + ", "; 
-    } 
-    if(tagString.length()>0)
-    {
-      tagString = tagString.substring(0, tagString.length()-2);
-    }
-    return tagString;
-  }
-  
+   
   public void addTag(String tag, int sliceIndex, int[] location, int radius)
   {
       OrganTag organTag = new OrganTag(tag, sliceIndex, location, radius);
       tags.add(organTag);
+      ButtonElement be = this.addTagButton(organTag);
+      annotateView.addWidget(be.button);
   }
 }
 
