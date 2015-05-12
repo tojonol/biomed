@@ -1,29 +1,28 @@
+//element for keeping track of organ button properites
 public class ButtonElement
 {
-  OrganTag tag;
-  APButton button;
-  int offset;
+   APButton button;
+   int slice;
+   int offset; 
    
-  public ButtonElement(APButton button, int offset, OrganTag tag)
-  {
-    this.button = button;
-    this.offset = offset;
-    this.tag = tag;
-  }  
+   public ButtonElement(APButton button, int slice, int offset)
+   {
+     this.slice = slice;
+     this.button = button;
+     this.offset = offset;
+   }  
 }
 
 import java.util.*;
+//maintains organ tags
 public class OrganTag
 {
-  int slice, radius;
-  int[] location;
-  String tag;
-  public OrganTag(String tag, int imageSlice, int[] location, int radius)
+    int slice;
+    String tag;
+   public OrganTag(String tag, int imageSlice)
   {
     this.tag = tag;
     slice = imageSlice;
-    this.location = location;
-    this.radius = radius;
   } 
 }
 
@@ -38,8 +37,11 @@ public class OrganData
   Set tagsliceset;
   JSONArray mesh;
   APRadioButton radio;
+  
+  //organData constructor
   public OrganData(String id_, String organ_name, JSONArray omesh, JSONArray files, int[] organOffset)
   {
+    tagsliceset = new HashSet();
     tags = new ArrayList<OrganTag>();
     imgList = new ArrayList<String>();
     tagButtons = new ArrayList<ButtonElement>();
@@ -58,35 +60,87 @@ public class OrganData
     }
   } 
  
-  public ArrayList<ButtonElement> getButtons()
+  //method to update the button at a slice index, returns new button
+  public ButtonElement updateButton(int sliceIndex)
   {
-     return tagButtons;
+    //if a new tag is added and we need a new button
+     if (!tagsliceset.contains(sliceIndex))
+     {
+        placeTagButton(sliceIndex, tagsliceset.size());
+        tagsliceset.add(sliceIndex);
+        return tagButtons.get(tagButtons.size()-1);
+     }
+     //if a tag is already made at slice, update button
+     else
+     {
+        for(int i=0; i<tagButtons.size(); i++)
+         {
+           if(tagButtons.get(i).slice==sliceIndex)
+           {
+             int offset = tagButtons.get(i).offset;
+             tagButtons.remove(i);
+             placeTagButton(sliceIndex,offset);
+             return tagButtons.get(tagsliceset.size()-1); 
+           }
+         } 
+         return tagButtons.get(0);
+     }
   }
-  
-  public void placeTagButtons()
+ 
+  //check if slice has a button
+  public int slicebuttonpresent(int sliceIndex)
   {
-    for (OrganTag tag : this.tags)
+    if (tagsliceset.contains(sliceIndex))
     {
-      addTagButton(tag);
+        for (int i = 0; i<tagButtons.size();i++)
+        {
+           if (tagButtons.get(i).slice == sliceIndex)
+             return i; 
+        }
+        return -1;
+    }
+    else
+    {
+       return -1; 
     }
   }
-  
-  ButtonElement addTagButton(OrganTag tag)
+
+  //return arraylist of buttonelements
+  public ArrayList<ButtonElement> getButtons()
   {
-    int offset = this.tagButtons.size();
-    APButton button = new APButton(width-400, 400+(offset*150), 400, 150, tag.tag);
-    ButtonElement be = new ButtonElement(button, offset, tag);
-    tagButtons.add(be);
-    
-    return be;
+     return tagButtons; 
+  }
+ 
+  //create a set for the slices which need buttons
+  public void placeTagButtons()
+  {
+    for (int i = 0; i<tags.size();i++)
+    {
+      OrganTag curr = tags.get(i);
+      if (!tagsliceset.contains(curr.slice))
+      {
+         placeTagButton(curr.slice, tagsliceset.size());
+         tagsliceset.add(curr.slice); 
+      }
+    }  
   }
   
+  //place the button representing a patient
+  public void placeTagButton(int currslice, int offset)
+  {
+      String buttonlabel = getTagString(currslice);
+      APButton button = new APButton(width-400, 400+(offset*150), 400, 150, buttonlabel); 
+      ButtonElement be = new ButtonElement(button, currslice, offset);
+      tagButtons.add(be);
+   }
+ 
  //get the radio button for a given organ
  public APRadioButton getOrganButton()
  {
     return radio; 
  }
  
+ //download all the organ's images
  public void downloadAllImages()
  {
    try
@@ -137,7 +191,6 @@ public class OrganData
  public void loadTags()
  {
     File sketchDir = getFilesDir();
-  
     try 
     {
       FileReader input = new FileReader(sketchDir.getAbsolutePath() + "/" + tagfile);
@@ -151,13 +204,12 @@ public class OrganData
       }
       String json_Str = builder.toString();
       JSONArray JSONtags = JSONArray.parse(json_Str);
-//      print(JSONtags.size() + " tags read from file\n");
       for (int i = 0; i < JSONtags.size(); i++) 
       {
         JSONObject currtag = JSONtags.getJSONObject(i);
         String temptag = currtag.getString("tag");
         String tempslice = currtag.getString("slice");
-        //addTag(temptag, Integer.parseInt(tempslice));
+        addTag(temptag, Integer.parseInt(tempslice));
       } 
     }
     catch (Exception e) 
@@ -179,28 +231,42 @@ public class OrganData
           outFile.createNewFile();
         FileWriter outWriter = new FileWriter(sketchDir.getAbsolutePath() + "/"+tagfile);
         outWriter.write("[\n");
-//        print(tags.size());
         for (int i=0; i<tags.size (); i++) 
         {
           outWriter.write("{ \"slice\": \"" + tags.get(i).slice + "\", \"tag\": \""+ tags.get(i).tag + "\" },");
         }
         outWriter.write("\n]");
-        
         outWriter.flush();
-        
       }
       catch (Exception e) 
       {
       }
     }
   }
-   
-  public void addTag(String tag, int sliceIndex, int[] location, int radius)
+ 
+  
+  //get tag string
+  public String getTagString(int sliceIndex)
   {
-      OrganTag organTag = new OrganTag(tag, sliceIndex, location, radius);
-      tags.add(organTag);
-      // ButtonElement be = this.addTagButton(organTag);
-      // annotateView.addWidget(be.button);
+    String tagString = "";
+    
+    for (int i = 0; i< tags.size(); i++)
+    {
+       if(sliceIndex == tags.get(i).slice)
+         tagString = tagString + tags.get(i).tag + ", "; 
+    } 
+    if(tagString.length()>0)
+    {
+      tagString = tagString.substring(0, tagString.length()-2);
+    }
+    return tagString;
+  }
+  
+  //add tag/sliceindex pair to taglist
+  public void addTag(String tag, int sliceIndex)
+  {
+      OrganTag organTag = new OrganTag(tag, sliceIndex);
+      tags.add(organTag); 
   }
 }
 
