@@ -9,3 +9,5 @@ Open Enorase/SkullCracker project with Processing 2.2.1 in android mode.  In the
 
 To Resync client files with server:
 Click Settings->Update.  Make sure your android device has a good internet connection before making this selection.  It should take a few minutes to retrieve all patient data.
+
+To compile the mesh construction portion of the project you'll need to use CMake and have ITK installed. Compile instructions for the C++ part of the project can be found in README.md at the root level of the repository and requires ITK. MCMain in the build target for mesh construction, so if that's all you want to use you can run `make MCMain` to only build that target and its dependencies. Run the MCMain executable that produces with no arguments for usage instructions. JSON that can be passed to the device will be written to stdout in a successful run and a .obj files for viewing will be written to the `output_file` if provided or `a.obj` in the working directory if not.
