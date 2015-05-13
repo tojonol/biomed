@@ -1,5 +1,4 @@
 //import apwidgets.*;
-import java.util.concurrent.Semaphore;
 
 float yr = PI / 4;
 float xr = PI /4;
@@ -20,7 +19,6 @@ class CutawayPlane
 {
   int DIM_X = 0, DIM_Y = 1, DIM_Z = 2;
   
-  Semaphore locLock = new Semaphore(1);
   int location;
   int keepDirection = 1;
   
@@ -32,12 +30,7 @@ class CutawayPlane
   int[][] nullArr = {null};
   
   // Note that `~0` mean the int with every bit set
-  private int cutDim;
-  
-  void setLocation(int loc)
-  {
-    this.cut(loc - this.location);
-  }
+  private int cutDim;  
   
   public void invalidateCache()
   {
@@ -57,7 +50,6 @@ class CutawayPlane
   
   public void cut(int change)
   {
-    this.locLock.acquireUninterruptibly();
     if(change>0 && location+change<= maxMesh+1)
     {
       if(change>0 && location<minMesh-1)
@@ -79,44 +71,14 @@ class CutawayPlane
       {
         location = location+change;
       }
-    }
-    
-    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
-    
-    this.locLock.release();
+    }  
   }
   
-  void drawTag(OrganTag tag)
+  void draw() 
   {
-    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
-    float dist = this.distToPoint(tag.location);
-   
-    if (dist >= tag.radius)
-    {
-      return;
-    }
-    float circWidth = sqrt(tag.radius*tag.radius - dist*dist) * 2;
-     
-    pushMatrix();
-    translate(0, 0, this.location - 1);
-    rotateX(0);
-    rotateY(PI);
-      
-    stroke(255, 0, 255);
-    strokeWeight(1);
-    fill(255, 0, 255, 64);
-    ellipse(tag.location[0], tag.location[1], circWidth, circWidth);
-    
-    popMatrix();
-  }
-  
-  void draw()
-  {
-    this.locLock.acquireUninterruptibly();
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet);
 
     fill(153);
-    noStroke();
     pushMatrix();
     translate(0 - currOrgan.organOffset[0], 0 - currOrgan.organOffset[1], this.location);
     if (this.cutDim == DIM_X) rotateY(HALF_PI);
@@ -124,33 +86,23 @@ class CutawayPlane
     
     beginShape(QUADS);
     
-    sliceIndex = (int)((this.location / scale[2]) + currOrgan.organOffset[2]);
-    texture(patientList.get(currentPatient).getActiveOrganImage(sliceIndex));
+    int sliceIndex = (int)((this.location / scale[2]) + currOrgan.organOffset[2]);
+    img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
+    texture(img);
+//    texture(patientList.get(currentPatient).getActiveOrganImage(sliceIndex));
     vertex(0, 0,  0, 0);
     vertex(img.width * scale[0], 0,  img.width, 0);
     vertex(img.width * scale[0], img.height * scale[1],  img.width, img.height);
     vertex(0, img.height * scale[1],  0, img.height);
     endShape();
-    
-    popMatrix();
 
-    
-    for (OrganTag tag : currOrgan.tags) {
-      this.drawTag(tag);
-    }
-    
-    this.drawTag(tmpTag);
-    this.locLock.release();
+    popMatrix();
   }
   
-  PShape cutPolies(int[][][] triangles)
-  {
-    println("k6");
-    this.locLock.acquireUninterruptibly();
+  PShape cutPolies(int[][][] triangles) {
     int activeOrganIdx = patientList.get(currentPatient).getActiveOrgan();
     if (this.location == this.lastCut && activeOrganIdx == this.lastOrganIdx)
     {
-      this.locLock.release();
       return this.lastCutResult;
     }
     
@@ -188,7 +140,6 @@ class CutawayPlane
     this.lastOrganIdx = activeOrganIdx;
     this.lastCutResult = cutMesh;
 
-    this.locLock.release();
     return cutMesh;
   }
   
@@ -294,17 +245,28 @@ class Boxxen
       {0, 100, 0},
       {100, 0, 0},
     }};
-
+  
+  void drawPoly(int[][] poly) 
+  {
+    if (poly.length == 0 || poly[0] == null) return;
+    beginShape();
+    for (int i=0; i<poly.length; i++) 
+    {
+      if (poly[i] == null) 
+        break;
+      
+      vertex(poly[i][0], poly[i][1], poly[i][2]);
+    }
+    vertex(poly[0][0], poly[0][1], poly[0][2]);
+    endShape();
+  }
+  
   void draw(CutawayPlane cap) 
   {
-    println("z1");
     PShape polies = cap.cutPolies(triangles);
-    println("z2");
-    fill(255, 255, 255, 255);
-    noStroke();
-    println("z3");
+    
+    fill(255);
     shape(polies);
-    println("z4");
   }
 
   public void update(JSONArray ja) 

@@ -7,8 +7,6 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 
-ButtonElement gBe;
-
 JSONObject json;
 JSONArray patients;
 PImage img;
@@ -25,11 +23,6 @@ CutawayPlane cap;
 KetaiGesture gesture;
 float prevPinchX = -1, prevPinchY = -1, scaleRatio = 1, modX, modY, maxMesh, minMesh;
 float scale[] = {0.98, 0.98, 2.4};
-boolean dragActive, pinchActive;
-int dragStartX, dragStartY;
-OrganTag tmpTag;
-
-
 
 //general program setup
 void setup()
@@ -49,12 +42,10 @@ void setup()
   sliceIndex = 0;
   modX = width/2;
   modY = height/2;
-  
-  int[] initialLoc = new int[3];
-  tmpTag = new OrganTag("", 0, initialLoc, 0);
 }
 
-public String sketchRenderer() {
+public String sketchRenderer() 
+{
   return P3D; 
 }
 
@@ -62,6 +53,7 @@ public String sketchRenderer() {
 void draw() 
 {
   background(0);
+  int[] currOrganOffset = new int[3];  
   
   //Help view
   if(view == "help")
@@ -72,20 +64,21 @@ void draw()
      textSize(60);
      text(helpmsg,width/2,200);
   }
-
-  //ImageViewer Mode
-  fill(255, 255, 255, 255);
   
-  if (view == "image")
+  //ImageViewer Mode
+  else if (view == "image")
   {
+    currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
+    println(currOrganOffset[0] + "->" +currOrganOffset[1] + "->" +currOrganOffset[2]  );
+    
     //Check radio button and set active organ
     if (patientList.get(currentPatient).getActiveOrgan() != organSet)
     {
         organSet =  patientList.get(currentPatient).getActiveOrgan();
-        box.update(patientList.get(currentPatient).getOrganMesh(organSet));
-        
+        box.update(patientList.get(currentPatient).getOrganMesh(organSet));        
     }
-
+    
+    //Draw image information
     pointLight(100, 100, 100, 200, 200, 200);
     pointLight(100, 100, 100, -200, -200, -200);
     ambientLight(120, 120, 120);
@@ -99,8 +92,7 @@ void draw()
     box.draw(cap);
     cap.draw();
     popMatrix();
-    fill(255, 255, 255, 255);
-    text(patientList.get(currentPatient).getpName() + " RIP", width/2, 150);
+    text(patientList.get(currentPatient).getpName(), width/2, 150);
     img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
   }
   
@@ -114,77 +106,49 @@ void draw()
   //Annotate mode
   if (view == "annotate")
   {
-    println("pa!");
+    currOrganOffset = patientList.get(currentPatient).getOrganData(organSet).organOffset;
+    println(currOrganOffset[0] + "->" +currOrganOffset[1] + "->" +currOrganOffset[2]  );
     textSize(50);
     pushMatrix();
     translate(modX, modY);
+
     //adjust for facing camera
     rotateX(0);
     rotateY(PI);
     scale(scaleRatio);
-    println("pb!");
     box.draw(cap);
-    println("pc!");
     cap.draw();
-    println("pd!");
     popMatrix();
-    fill(255, 255, 255, 255);
     text(patientList.get(currentPatient).getpName(), width/2, 150);
-    
-    if (gBe != null)
-    {
-      println(gBe.tag.location[2]);
-      cap.setLocation(gBe.tag.location[2]);
-      gBe = null;
-      println("OUT!");
-      println(sliceIndex);
-    }
+    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
   }
-}
-
-void mousePressed()
-{
-  dragActive = true;
-  dragStartX = mouseX;
-  dragStartY = mouseY;
   
-  tmpTag.location[0] = (int)((mouseX - modX) / scaleRatio);
-  tmpTag.location[1] = (int)((mouseY - modY) / scaleRatio);
-  tmpTag.location[2] = cap.location;
-  tmpTag.radius = 0;
+  //display the active overlay
+  widgetOverlay();
 }
-void mouseReleased() 
-{
-  dragActive = false;
-  pinchActive = false;
-};
 
-
+//track mouse dragged
 void mouseDragged() 
 {
-  if (pinchActive) {
-    return;
-  }
-  
+  //if in imageview, rotate object
   if(view == "image")
   {
     float rate = 0.01;
     xr += (pmouseY-mouseY) * rate;
     yr += (mouseX-pmouseX) * rate;
   }
+  //if in annotate view, slide object
   else if(view == "annotate")
   {
-    int dx = dragStartX - mouseX,
-      dy = dragStartY - mouseY;
-
-    tmpTag.radius = (int)(sqrt(dx*dx + dy*dy) / scaleRatio);
+    modY -= (pmouseY-mouseY);
+    modX +=(mouseX-pmouseX);     
   }
 }
 
 //event listener for pinch
 void onPinch(float x, float y, float d)
 {
-  pinchActive = true;
+  //zoom on pinch for both imageview and annotate view
   if(view=="image" || view=="annotate")
   {  
     if (prevPinchX >= 0 && prevPinchY >= 0 && (frameCount - prevPinchFrame < 10)) 
@@ -199,8 +163,7 @@ void onPinch(float x, float y, float d)
     prevPinchFrame = frameCount;
     if (scaleRatio <= .1)
       scaleRatio = .1;
-    //println("Pinch " + x + " " + y + " " + d);
-  } 
+  }
 }
 
 //set active view
@@ -332,6 +295,7 @@ void fetchJSON()
     saveJSON(json_Str, output);
     patientList.clear();
     fillPatientList(json_Str);
+    
     //download images
     for(PatientData patient : patientList)
     {
@@ -344,7 +308,6 @@ void fetchJSON()
 void fillPatientList(String json_Str)
 {
     JSONObject json = JSONObject.parse(json_Str);
-//    String other = json.getString("other");
     patients = json.getJSONArray("patients");
     for (int i = 0; i < patients.size(); i++) 
     {
@@ -457,122 +420,140 @@ void onClickWidget(APWidget widget)
   { 
      thread("clearPatientFiles");
   }
+  //viewpatients clicked
   else if(widget == viewpatients)
   {
     view = "patients";
-    widgetOverlay();
   }
+  //settings was clicked
   else if(widget == settings)
   {
     view = "settings";
-    widgetOverlay();
   }
+  //goes back to clients list
   else if(widget == back_iv)
   {
     view = "patients";
-    widgetOverlay();
     imageViewer.removeWidget(patientList.get(currentPatient).getOrganButtons());
   }
+  //back from clients list
   else if(widget == back_cw)
   {
     view = "home";
-    widgetOverlay();
   }
+  //back from settings
   else if(widget == back_sw)
   {
     view = "home";
-    widgetOverlay();
   }
+  //back from annotate
   else if(widget == back_av)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
     currOrgan.saveTags();
-    hideVirtualKeyboard();
     ArrayList<ButtonElement> slicebuttons = currOrgan.getButtons();
     for(int i = 0; i<slicebuttons.size();i++)
     {
        annotateView.removeWidget(slicebuttons.get(i).button);
     }
     view = "image";
-    widgetOverlay();
   }
+  //switch to annotate view
   else if(widget == annotate)
   {
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
-//    currOrgan.loadTags();
     ArrayList<ButtonElement> slicebuttons = currOrgan.getButtons();
     for(int i = 0; i<slicebuttons.size();i++)
     {
        annotateView.addWidget(slicebuttons.get(i).button);
     }
     view = "annotate";
-    widgetOverlay();
-    
-    modX = width/2;
-    modY = height/2;
   } 
+  //switch to help
   else if(widget == help)
   {
     view = "help"; 
-    widgetOverlay();
   }
+  //cut out of object by 1
   else if(widget == cutOutObjectS)
   {
     cap.cut(-1);
+    sliceIndex = cap.location;
   }
+  //cut out of object by 5
   else if(widget == cutOutObjectL)
   {
     cap.cut(-5);
+    sliceIndex = cap.location;
   }
+  //cut into object by 1
   else if(widget == cutInObjectS)
   {
     cap.cut(1);
+    sliceIndex = cap.location;
   }
+  //cut into object by 5
   else if(widget == cutInObjectL)
   {
     cap.cut(5);
+    sliceIndex = cap.location;
   }
+  //click back from help
   else if(widget == back_settings)
   {
     view = "settings";
-    widgetOverlay();
   }
-  else if (widget == save)
+  //annotate save
+  else if(widget == save)
   {
     hideVirtualKeyboard();
     OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
-    currOrgan.addTag(annotation.getText(), sliceIndex, tmpTag.location, tmpTag.radius);
-    tmpTag.radius = 0;
-    tmpTag.location = new int[3];
-    
+    currOrgan.addTag(annotation.getText(), sliceIndex);
+    //if its a new button just add it
+    int sliceButtonLocation = currOrgan.slicebuttonpresent(sliceIndex);
+    if (sliceButtonLocation==-1)
+    {
+      ButtonElement currButton = currOrgan.updateButton(sliceIndex);
+      annotateView.addWidget(currButton.button);
+    }
+    else
+    {
+      annotateView.removeWidget(currOrgan.tagButtons.get(sliceButtonLocation).button);
+      ButtonElement currButton = currOrgan.updateButton(sliceIndex);
+      annotateView.addWidget(currButton.button);
+    }    
     annotation.setText("");
   }
+  //check if client was clicked
   for (int i = 0; i < patientList.size(); i++)
   {
      if (widget == patientList.get(i).getPatientButton())
      {
         currentPatient = i;  
         view = "image";
-        widgetOverlay();
         imageViewer.addWidget(patientList.get(i).getOrganButtons());
         box.update(patientList.get(i).getOrganMesh(0));
         organSet = 0;
         img = patientList.get(currentPatient).getActiveOrganImage(sliceIndex);
+        cap.lastCut=99999;
      }
   }
+  //check which organ was clicked
   if (view == "annotate")
   {
-    println("SHOULD NOT BE HERE");
-    OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
+       OrganData currOrgan = patientList.get(currentPatient).getOrganData(organSet); 
 
-    for (ButtonElement be : currOrgan.getButtons())
-    {
-      if (widget == be.button)
+      ArrayList<ButtonElement> slicebuttons = currOrgan.getButtons();
+      for(int i = 0; i<slicebuttons.size();i++)
       {
-        gBe = be;
-      }
-    }
+         if (widget == slicebuttons.get(i).button)
+         {
+             sliceIndex = slicebuttons.get(i).slice;
+             cap.location = sliceIndex;
+         }
+      } 
   }
+  widgetOverlay();
 }
 
 public boolean surfaceTouchEvent(MotionEvent event) 

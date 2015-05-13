@@ -25,3 +25,7 @@ target_link_libraries(CropByMask SeededRegionGrower ${ITK_LIBRARIES})
 
 add_executable(Quantify src/Quantification/Quantify.cxx)
 target_link_libraries(Quantify SeededRegionGrower ${ITK_LIBRARIES})
+
+add_executable(Registration src/Registration/Threshhold.cxx)
+target_link_libraries(Registration ${ITK_LIBRARIES})
+
